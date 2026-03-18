@@ -1,0 +1,1305 @@
+<!DOCTYPE html>
+<html lang="zh-CN"><head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>单克隆抗体制备 - 交互式教学动画</title>
+  <script src="https://metis-online.fbcontent.cn/metis-misc/zgLDUdmazTYc0B4K6Cor.js"></script>
+  <script src="https://metis-online.fbcontent.cn/metis-misc/zZZY40t7WJC7UdQCPACm.js"></script>
+  <!-- original src: https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js -->
+  <script src="https://musk-online.fbcontent.cn/pub-musk-ai-studio/workflow/file/document/9ZPdck2zbmi93BaTPNeZUQ.js"></script>
+  <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#0ea5e9',
+                        secondary: '#8b5cf6',
+                        accent: '#f59e0b',
+                    },
+                    cursor: {
+                        'grab': 'grab',
+                        'grabbing': 'grabbing'
+                    }
+                }
+            }
+        }
+    </script>
+  <style>
+        body { background-color: #f0f9ff; overflow-x: hidden; overflow-y: auto; user-select: none; touch-action: pan-y; }
+        @media (max-width: 768px) {
+            .petri-dish { width: 85vw !important; height: 85vw !important; max-width: 400px !important; max-height: 400px !important; }
+            .cell { transform: scale(0.8); }
+            .b-cell, .tumor-cell { width: 40px !important; height: 40px !important; }
+            .hybrid-cell, .fused-bb, .fused-tt { width: 60px !important; height: 60px !important; }
+        }
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.6);
+            box-shadow: 0 8px 32px rgba(31, 38, 135, 0.1);
+        }
+        .cell {
+            position: absolute; border-radius: 50%;
+            display: flex; justify-content: center; align-items: center;
+            transition: transform 0.3s;
+        }
+        .b-cell {
+            width: 55px; height: 55px;
+            background-image: url('https://musk-online.fbcontent.cn/pub-musk-ai-studio/workflow/file/picture/EkN6ZCVyhr8V2TxGb2agTk.jpg');
+            background-size: contain; background-repeat: no-repeat; background-position: center; border: none;
+            filter: drop-shadow(0 4px 6px rgba(0,0,0,0.1));
+        }
+        .tumor-cell {
+            width: 70px; height: 70px;
+            background-image: url('https://musk-online.fbcontent.cn/pub-musk-ai-studio/workflow/file/picture/pgMTc72snubUcXT8gwHyjd.jpg');
+            background-size: contain; background-repeat: no-repeat; background-position: center; border: none;
+            filter: drop-shadow(0 4px 6px rgba(0,0,0,0.1));
+        }
+        .fused-bb {
+            width: 80px; height: 80px;
+            background-image: url('https://musk-online.fbcontent.cn/pub-musk-ai-studio/workflow/file/picture/dH6wRgXohK96fEA5sLLuZD.jpg');
+            background-size: contain; background-repeat: no-repeat; background-position: center; border: none;
+            border-radius: 50%;
+            filter: drop-shadow(0 4px 8px rgba(0,0,0,0.15));
+        }
+        .fused-tt {
+            width: 95px; height: 95px;
+            background-image: url('https://musk-online.fbcontent.cn/pub-musk-ai-studio/workflow/file/picture/SHztvb44mjAB8NUMG4TPcB.jpg');
+            background-size: contain; background-repeat: no-repeat; background-position: center; border: none;
+            border-radius: 50%;
+            filter: drop-shadow(0 4px 8px rgba(0,0,0,0.15));
+        }
+        .hybrid-cell {
+            width: 90px; height: 90px;
+            background-image: url('https://musk-online.fbcontent.cn/pub-musk-ai-studio/workflow/file/picture/toZqnJtaMfX9c7EmUrK4i8.jpg');
+            background-size: contain; background-repeat: no-repeat; background-position: center; border: none;
+            filter: drop-shadow(0 0 12px rgba(139, 92, 246, 0.6));
+        }
+        .cell-label {
+            position: absolute;
+            top: -5px;
+            right: -5px;
+            background: rgba(255, 255, 255, 0.9);
+            border: 1px solid #cbd5e1;
+            color: #334155;
+            font-size: 10px;
+            font-weight: bold;
+            padding: 1px 4px;
+            border-radius: 4px;
+            z-index: 10;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+        }
+        .draggable-tool { cursor: grab; z-index: 100; transition: transform 0.1s; }
+        .draggable-tool:active { cursor: grabbing; transform: scale(1.05); }
+        .well { transition: all 0.3s; position: relative; overflow: visible; }
+        .well:hover { border-color: #3b82f6; }
+        .liquid-drop {
+            position: absolute; width: 12px; height: 12px; border-radius: 50%;
+            pointer-events: none; z-index: 90;
+        }
+        .data-table th, .data-table td {
+            padding: 6px 8px;
+            text-align: left;
+            border-bottom: 1px solid #e2e8f0;
+        }
+        .data-table th {
+            background-color: #f8fafc;
+            font-weight: 600;
+            color: #475569;
+        }
+        .data-table tr:last-child td { border-bottom: none; }
+    </style>
+ <style>*, ::before, ::after{--tw-border-spacing-x:0;--tw-border-spacing-y:0;--tw-translate-x:0;--tw-translate-y:0;--tw-rotate:0;--tw-skew-x:0;--tw-skew-y:0;--tw-scale-x:1;--tw-scale-y:1;--tw-pan-x: ;--tw-pan-y: ;--tw-pinch-zoom: ;--tw-scroll-snap-strictness:proximity;--tw-gradient-from-position: ;--tw-gradient-via-position: ;--tw-gradient-to-position: ;--tw-ordinal: ;--tw-slashed-zero: ;--tw-numeric-figure: ;--tw-numeric-spacing: ;--tw-numeric-fraction: ;--tw-ring-inset: ;--tw-ring-offset-width:0px;--tw-ring-offset-color:#fff;--tw-ring-color:rgb(59 130 246 / 0.5);--tw-ring-offset-shadow:0 0 #0000;--tw-ring-shadow:0 0 #0000;--tw-shadow:0 0 #0000;--tw-shadow-colored:0 0 #0000;--tw-blur: ;--tw-brightness: ;--tw-contrast: ;--tw-grayscale: ;--tw-hue-rotate: ;--tw-invert: ;--tw-saturate: ;--tw-sepia: ;--tw-drop-shadow: ;--tw-backdrop-blur: ;--tw-backdrop-brightness: ;--tw-backdrop-contrast: ;--tw-backdrop-grayscale: ;--tw-backdrop-hue-rotate: ;--tw-backdrop-invert: ;--tw-backdrop-opacity: ;--tw-backdrop-saturate: ;--tw-backdrop-sepia: ;--tw-contain-size: ;--tw-contain-layout: ;--tw-contain-paint: ;--tw-contain-style: }::backdrop{--tw-border-spacing-x:0;--tw-border-spacing-y:0;--tw-translate-x:0;--tw-translate-y:0;--tw-rotate:0;--tw-skew-x:0;--tw-skew-y:0;--tw-scale-x:1;--tw-scale-y:1;--tw-pan-x: ;--tw-pan-y: ;--tw-pinch-zoom: ;--tw-scroll-snap-strictness:proximity;--tw-gradient-from-position: ;--tw-gradient-via-position: ;--tw-gradient-to-position: ;--tw-ordinal: ;--tw-slashed-zero: ;--tw-numeric-figure: ;--tw-numeric-spacing: ;--tw-numeric-fraction: ;--tw-ring-inset: ;--tw-ring-offset-width:0px;--tw-ring-offset-color:#fff;--tw-ring-color:rgb(59 130 246 / 0.5);--tw-ring-offset-shadow:0 0 #0000;--tw-ring-shadow:0 0 #0000;--tw-shadow:0 0 #0000;--tw-shadow-colored:0 0 #0000;--tw-blur: ;--tw-brightness: ;--tw-contrast: ;--tw-grayscale: ;--tw-hue-rotate: ;--tw-invert: ;--tw-saturate: ;--tw-sepia: ;--tw-drop-shadow: ;--tw-backdrop-blur: ;--tw-backdrop-brightness: ;--tw-backdrop-contrast: ;--tw-backdrop-grayscale: ;--tw-backdrop-hue-rotate: ;--tw-backdrop-invert: ;--tw-backdrop-opacity: ;--tw-backdrop-saturate: ;--tw-backdrop-sepia: ;--tw-contain-size: ;--tw-contain-layout: ;--tw-contain-paint: ;--tw-contain-style: }/* ! tailwindcss v3.4.17 | MIT License | https://tailwindcss.com */*,::after,::before{box-sizing:border-box;border-width:0;border-style:solid;border-color:#e5e7eb}::after,::before{--tw-content:''}:host,html{line-height:1.5;-webkit-text-size-adjust:100%;-moz-tab-size:4;tab-size:4;font-family:ui-sans-serif, system-ui, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";font-feature-settings:normal;font-variation-settings:normal;-webkit-tap-highlight-color:transparent}body{margin:0;line-height:inherit}hr{height:0;color:inherit;border-top-width:1px}abbr:where([title]){-webkit-text-decoration:underline dotted;text-decoration:underline dotted}h1,h2,h3,h4,h5,h6{font-size:inherit;font-weight:inherit}a{color:inherit;text-decoration:inherit}b,strong{font-weight:bolder}code,kbd,pre,samp{font-family:ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;font-feature-settings:normal;font-variation-settings:normal;font-size:1em}small{font-size:80%}sub,sup{font-size:75%;line-height:0;position:relative;vertical-align:baseline}sub{bottom:-.25em}sup{top:-.5em}table{text-indent:0;border-color:inherit;border-collapse:collapse}button,input,optgroup,select,textarea{font-family:inherit;font-feature-settings:inherit;font-variation-settings:inherit;font-size:100%;font-weight:inherit;line-height:inherit;letter-spacing:inherit;color:inherit;margin:0;padding:0}button,select{text-transform:none}button,input:where([type=button]),input:where([type=reset]),input:where([type=submit]){-webkit-appearance:button;background-color:transparent;background-image:none}:-moz-focusring{outline:auto}:-moz-ui-invalid{box-shadow:none}progress{vertical-align:baseline}::-webkit-inner-spin-button,::-webkit-outer-spin-button{height:auto}[type=search]{-webkit-appearance:textfield;outline-offset:-2px}::-webkit-search-decoration{-webkit-appearance:none}::-webkit-file-upload-button{-webkit-appearance:button;font:inherit}summary{display:list-item}blockquote,dd,dl,figure,h1,h2,h3,h4,h5,h6,hr,p,pre{margin:0}fieldset{margin:0;padding:0}legend{padding:0}menu,ol,ul{list-style:none;margin:0;padding:0}dialog{padding:0}textarea{resize:vertical}input::placeholder,textarea::placeholder{opacity:1;color:#9ca3af}[role=button],button{cursor:pointer}:disabled{cursor:default}audio,canvas,embed,iframe,img,object,svg,video{display:block;vertical-align:middle}img,video{max-width:100%;height:auto}[hidden]:where(:not([hidden=until-found])){display:none}.pointer-events-none{pointer-events:none}.absolute{position:absolute}.relative{position:relative}.inset-0{inset:0px}.-inset-4{inset:-1rem}.left-4{left:1rem}.top-4{top:1rem}.-bottom-8{bottom:-2rem}.bottom-0{bottom:0px}.bottom-10{bottom:2.5rem}.right-10{right:2.5rem}.left-1\/2{left:50%}.top-1\/2{top:50%}.left-6{left:1.5rem}.left-\[10\%\]{left:10%}.left-\[15\%\]{left:15%}.left-\[20\%\]{left:20%}.left-\[30\%\]{left:30%}.left-\[40\%\]{left:40%}.left-\[45\%\]{left:45%}.left-\[50\%\]{left:50%}.left-\[60\%\]{left:60%}.left-\[70\%\]{left:70%}.left-\[75\%\]{left:75%}.left-\[80\%\]{left:80%}.left-\[85\%\]{left:85%}.top-6{top:1.5rem}.top-\[10\%\]{top:10%}.top-\[15\%\]{top:15%}.top-\[20\%\]{top:20%}.top-\[25\%\]{top:25%}.top-\[30\%\]{top:30%}.top-\[35\%\]{top:35%}.top-\[40\%\]{top:40%}.top-\[45\%\]{top:45%}.top-\[5\%\]{top:5%}.top-\[50\%\]{top:50%}.top-\[55\%\]{top:55%}.top-\[60\%\]{top:60%}.top-\[65\%\]{top:65%}.top-\[70\%\]{top:70%}.top-\[75\%\]{top:75%}.top-\[80\%\]{top:80%}.top-\[85\%\]{top:85%}.top-\[90\%\]{top:90%}.bottom-2{bottom:0.5rem}.right-2{right:0.5rem}.top-2{top:0.5rem}.top-20{top:5rem}.z-40{z-index:40}.z-50{z-index:50}.z-10{z-index:10}.z-20{z-index:20}.mx-auto{margin-left:auto;margin-right:auto}.mb-2{margin-bottom:0.5rem}.ml-1{margin-left:0.25rem}.-mt-16{margin-top:-4rem}.-mt-20{margin-top:-5rem}.-mt-40{margin-top:-10rem}.mt-20{margin-top:5rem}.mt-2{margin-top:0.5rem}.mt-4{margin-top:1rem}.mt-1{margin-top:0.25rem}.flex{display:flex}.h-1\.5{height:0.375rem}.h-12{height:3rem}.h-7{height:1.75rem}.h-full{height:100%}.h-screen{height:100vh}.h-16{height:4rem}.h-2{height:0.5rem}.h-2\.5{height:0.625rem}.h-20{height:5rem}.h-32{height:8rem}.h-8{height:2rem}.h-auto{height:auto}.h-4{height:1rem}.h-3{height:0.75rem}.h-40{height:10rem}.h-48{height:12rem}.h-56{height:14rem}.h-6{height:1.5rem}.h-14{height:3.5rem}.h-\[85vw\]{height:85vw}.h-28{height:7rem}.max-h-\[30vh\]{max-height:30vh}.max-h-full{max-height:100%}.max-h-\[500px\]{max-height:500px}.max-h-\[450px\]{max-height:450px}.min-h-\[60vh\]{min-height:60vh}.w-1\.5{width:0.375rem}.w-7{width:1.75rem}.w-full{width:100%}.w-1{width:0.25rem}.w-10{width:2.5rem}.w-16{width:4rem}.w-2{width:0.5rem}.w-2\.5{width:0.625rem}.w-4{width:1rem}.w-72{width:18rem}.w-8{width:2rem}.w-3{width:0.75rem}.w-40{width:10rem}.w-auto{width:auto}.w-14{width:3.5rem}.w-12{width:3rem}.w-\[85vw\]{width:85vw}.w-20{width:5rem}.max-w-\[500px\]{max-width:500px}.max-w-\[450px\]{max-width:450px}.flex-1{flex:1 1 0%}.-translate-x-1\/2{--tw-translate-x:-50%;transform:translate(var(--tw-translate-x), var(--tw-translate-y)) rotate(var(--tw-rotate)) skewX(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y))}.-translate-y-1\/2{--tw-translate-y:-50%;transform:translate(var(--tw-translate-x), var(--tw-translate-y)) rotate(var(--tw-rotate)) skewX(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y))}.-rotate-45{--tw-rotate:-45deg;transform:translate(var(--tw-translate-x), var(--tw-translate-y)) rotate(var(--tw-rotate)) skewX(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y))}.scale-125{--tw-scale-x:1.25;--tw-scale-y:1.25;transform:translate(var(--tw-translate-x), var(--tw-translate-y)) rotate(var(--tw-rotate)) skewX(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y))}.scale-105{--tw-scale-x:1.05;--tw-scale-y:1.05;transform:translate(var(--tw-translate-x), var(--tw-translate-y)) rotate(var(--tw-rotate)) skewX(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y))}.scale-75{--tw-scale-x:.75;--tw-scale-y:.75;transform:translate(var(--tw-translate-x), var(--tw-translate-y)) rotate(var(--tw-rotate)) skewX(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y))}@keyframes bounce{0%, 100%{transform:translateY(-25%);animation-timing-function:cubic-bezier(0.8,0,1,1)}50%{transform:none;animation-timing-function:cubic-bezier(0,0,0.2,1)}}.animate-bounce{animation:bounce 1s infinite}.cursor-grab{cursor:grab}.cursor-not-allowed{cursor:not-allowed}.cursor-pointer{cursor:pointer}.list-inside{list-style-position:inside}.list-disc{list-style-type:disc}.flex-col{flex-direction:column}.items-center{align-items:center}.justify-center{justify-content:center}.justify-between{justify-content:space-between}.gap-0{gap:0px}.gap-1{gap:0.25rem}.gap-2{gap:0.5rem}.gap-3{gap:0.75rem}.gap-16{gap:4rem}.gap-4{gap:1rem}.space-y-1 > :not([hidden]) ~ :not([hidden]){--tw-space-y-reverse:0;margin-top:calc(0.25rem * calc(1 - var(--tw-space-y-reverse)));margin-bottom:calc(0.25rem * var(--tw-space-y-reverse))}.space-y-3 > :not([hidden]) ~ :not([hidden]){--tw-space-y-reverse:0;margin-top:calc(0.75rem * calc(1 - var(--tw-space-y-reverse)));margin-bottom:calc(0.75rem * var(--tw-space-y-reverse))}.overflow-hidden{overflow:hidden}.overflow-y-auto{overflow-y:auto}.whitespace-nowrap{white-space:nowrap}.rounded-full{border-radius:9999px}.rounded-xl{border-radius:0.75rem}.rounded{border-radius:0.25rem}.rounded-2xl{border-radius:1rem}.rounded-sm{border-radius:0.125rem}.rounded-lg{border-radius:0.5rem}.border{border-width:1px}.border-4{border-width:4px}.border-2{border-width:2px}.border-b{border-bottom-width:1px}.border-t{border-top-width:1px}.border-amber-100{--tw-border-opacity:1;border-color:rgb(254 243 199 / var(--tw-border-opacity, 1))}.border-amber-200{--tw-border-opacity:1;border-color:rgb(253 230 138 / var(--tw-border-opacity, 1))}.border-blue-100{--tw-border-opacity:1;border-color:rgb(219 234 254 / var(--tw-border-opacity, 1))}.border-gray-100{--tw-border-opacity:1;border-color:rgb(243 244 246 / var(--tw-border-opacity, 1))}.border-gray-200{--tw-border-opacity:1;border-color:rgb(229 231 235 / var(--tw-border-opacity, 1))}.border-white{--tw-border-opacity:1;border-color:rgb(255 255 255 / var(--tw-border-opacity, 1))}.border-white\/50{border-color:rgb(255 255 255 / 0.5)}.border-gray-300{--tw-border-opacity:1;border-color:rgb(209 213 219 / var(--tw-border-opacity, 1))}.border-slate-200{--tw-border-opacity:1;border-color:rgb(226 232 240 / var(--tw-border-opacity, 1))}.border-purple-400{--tw-border-opacity:1;border-color:rgb(192 132 252 / var(--tw-border-opacity, 1))}.border-gray-200\/50{border-color:rgb(229 231 235 / 0.5)}.border-purple-300{--tw-border-opacity:1;border-color:rgb(216 180 254 / var(--tw-border-opacity, 1))}.border-red-300{--tw-border-opacity:1;border-color:rgb(252 165 165 / var(--tw-border-opacity, 1))}.border-yellow-300{--tw-border-opacity:1;border-color:rgb(253 224 71 / var(--tw-border-opacity, 1))}.border-blue-200{--tw-border-opacity:1;border-color:rgb(191 219 254 / var(--tw-border-opacity, 1))}.border-green-200{--tw-border-opacity:1;border-color:rgb(187 247 208 / var(--tw-border-opacity, 1))}.bg-amber-50{--tw-bg-opacity:1;background-color:rgb(255 251 235 / var(--tw-bg-opacity, 1))}.bg-amber-50\/90{background-color:rgb(255 251 235 / 0.9)}.bg-amber-500{--tw-bg-opacity:1;background-color:rgb(245 158 11 / var(--tw-bg-opacity, 1))}.bg-blue-50{--tw-bg-opacity:1;background-color:rgb(239 246 255 / var(--tw-bg-opacity, 1))}.bg-blue-500{--tw-bg-opacity:1;background-color:rgb(59 130 246 / var(--tw-bg-opacity, 1))}.bg-orange-100{--tw-bg-opacity:1;background-color:rgb(255 237 213 / var(--tw-bg-opacity, 1))}.bg-slate-50\/50{background-color:rgb(248 250 252 / 0.5)}.bg-white{--tw-bg-opacity:1;background-color:rgb(255 255 255 / var(--tw-bg-opacity, 1))}.bg-white\/50{background-color:rgb(255 255 255 / 0.5)}.bg-gray-100{--tw-bg-opacity:1;background-color:rgb(243 244 246 / var(--tw-bg-opacity, 1))}.bg-gray-200{--tw-bg-opacity:1;background-color:rgb(229 231 235 / var(--tw-bg-opacity, 1))}.bg-gray-300{--tw-bg-opacity:1;background-color:rgb(209 213 219 / var(--tw-bg-opacity, 1))}.bg-green-400\/20{background-color:rgb(74 222 128 / 0.2)}.bg-orange-400{--tw-bg-opacity:1;background-color:rgb(251 146 60 / var(--tw-bg-opacity, 1))}.bg-blue-400{--tw-bg-opacity:1;background-color:rgb(96 165 250 / var(--tw-bg-opacity, 1))}.bg-green-500{--tw-bg-opacity:1;background-color:rgb(34 197 94 / var(--tw-bg-opacity, 1))}.bg-blue-300{--tw-bg-opacity:1;background-color:rgb(147 197 253 / var(--tw-bg-opacity, 1))}.bg-purple-500{--tw-bg-opacity:1;background-color:rgb(168 85 247 / var(--tw-bg-opacity, 1))}.bg-rose-100{--tw-bg-opacity:1;background-color:rgb(255 228 230 / var(--tw-bg-opacity, 1))}.bg-white\/30{background-color:rgb(255 255 255 / 0.3)}.bg-white\/40{background-color:rgb(255 255 255 / 0.4)}.bg-white\/60{background-color:rgb(255 255 255 / 0.6)}.bg-white\/70{background-color:rgb(255 255 255 / 0.7)}.bg-white\/80{background-color:rgb(255 255 255 / 0.8)}.bg-purple-100{--tw-bg-opacity:1;background-color:rgb(243 232 255 / var(--tw-bg-opacity, 1))}.bg-purple-400{--tw-bg-opacity:1;background-color:rgb(192 132 252 / var(--tw-bg-opacity, 1))}.bg-purple-50{--tw-bg-opacity:1;background-color:rgb(250 245 255 / var(--tw-bg-opacity, 1))}.bg-red-100{--tw-bg-opacity:1;background-color:rgb(254 226 226 / var(--tw-bg-opacity, 1))}.bg-red-400{--tw-bg-opacity:1;background-color:rgb(248 113 113 / var(--tw-bg-opacity, 1))}.bg-yellow-100{--tw-bg-opacity:1;background-color:rgb(254 249 195 / var(--tw-bg-opacity, 1))}.bg-blue-100{--tw-bg-opacity:1;background-color:rgb(219 234 254 / var(--tw-bg-opacity, 1))}.bg-green-100{--tw-bg-opacity:1;background-color:rgb(220 252 231 / var(--tw-bg-opacity, 1))}.bg-red-50{--tw-bg-opacity:1;background-color:rgb(254 242 242 / var(--tw-bg-opacity, 1))}.bg-slate-700{--tw-bg-opacity:1;background-color:rgb(51 65 85 / var(--tw-bg-opacity, 1))}.bg-gradient-to-br{background-image:linear-gradient(to bottom right, var(--tw-gradient-stops))}.bg-gradient-to-r{background-image:linear-gradient(to right, var(--tw-gradient-stops))}.from-blue-500{--tw-gradient-from:#3b82f6 var(--tw-gradient-from-position);--tw-gradient-to:rgb(59 130 246 / 0) var(--tw-gradient-to-position);--tw-gradient-stops:var(--tw-gradient-from), var(--tw-gradient-to)}.from-blue-600{--tw-gradient-from:#2563eb var(--tw-gradient-from-position);--tw-gradient-to:rgb(37 99 235 / 0) var(--tw-gradient-to-position);--tw-gradient-stops:var(--tw-gradient-from), var(--tw-gradient-to)}.from-rose-200{--tw-gradient-from:#fecdd3 var(--tw-gradient-from-position);--tw-gradient-to:rgb(254 205 211 / 0) var(--tw-gradient-to-position);--tw-gradient-stops:var(--tw-gradient-from), var(--tw-gradient-to)}.from-white\/70{--tw-gradient-from:rgb(255 255 255 / 0.7) var(--tw-gradient-from-position);--tw-gradient-to:rgb(255 255 255 / 0) var(--tw-gradient-to-position);--tw-gradient-stops:var(--tw-gradient-from), var(--tw-gradient-to)}.via-rose-300{--tw-gradient-to:rgb(253 164 175 / 0)  var(--tw-gradient-to-position);--tw-gradient-stops:var(--tw-gradient-from), #fda4af var(--tw-gradient-via-position), var(--tw-gradient-to)}.to-indigo-600{--tw-gradient-to:#4f46e5 var(--tw-gradient-to-position)}.to-rose-400{--tw-gradient-to:#fb7185 var(--tw-gradient-to-position)}.to-transparent{--tw-gradient-to:transparent var(--tw-gradient-to-position)}.bg-clip-text{-webkit-background-clip:text;background-clip:text}.object-contain{object-fit:contain}.p-2{padding:0.5rem}.p-3{padding:0.75rem}.p-4{padding:1rem}.p-5{padding:1.25rem}.px-2{padding-left:0.5rem;padding-right:0.5rem}.px-3{padding-left:0.75rem;padding-right:0.75rem}.py-1{padding-top:0.25rem;padding-bottom:0.25rem}.py-1\.5{padding-top:0.375rem;padding-bottom:0.375rem}.py-2{padding-top:0.5rem;padding-bottom:0.5rem}.px-6{padding-left:1.5rem;padding-right:1.5rem}.py-3{padding-top:0.75rem;padding-bottom:0.75rem}.px-1{padding-left:0.25rem;padding-right:0.25rem}.px-4{padding-left:1rem;padding-right:1rem}.text-center{text-align:center}.font-sans{font-family:ui-sans-serif, system-ui, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji"}.text-lg{font-size:1.125rem;line-height:1.75rem}.text-sm{font-size:0.875rem;line-height:1.25rem}.text-xs{font-size:0.75rem;line-height:1rem}.text-xl{font-size:1.25rem;line-height:1.75rem}.text-base{font-size:1rem;line-height:1.5rem}.text-2xl{font-size:1.5rem;line-height:2rem}.text-\[10px\]{font-size:10px}.text-4xl{font-size:2.25rem;line-height:2.5rem}.font-bold{font-weight:700}.font-medium{font-weight:500}.font-normal{font-weight:400}.uppercase{text-transform:uppercase}.leading-relaxed{line-height:1.625}.leading-tight{line-height:1.25}.text-amber-700\/80{color:rgb(180 83 9 / 0.8)}.text-amber-800{--tw-text-opacity:1;color:rgb(146 64 14 / var(--tw-text-opacity, 1))}.text-blue-700\/80{color:rgb(29 78 216 / 0.8)}.text-blue-800{--tw-text-opacity:1;color:rgb(30 64 175 / var(--tw-text-opacity, 1))}.text-gray-500{--tw-text-opacity:1;color:rgb(107 114 128 / var(--tw-text-opacity, 1))}.text-orange-600{--tw-text-opacity:1;color:rgb(234 88 12 / var(--tw-text-opacity, 1))}.text-slate-800{--tw-text-opacity:1;color:rgb(30 41 59 / var(--tw-text-opacity, 1))}.text-transparent{color:transparent}.text-white{--tw-text-opacity:1;color:rgb(255 255 255 / var(--tw-text-opacity, 1))}.text-gray-400{--tw-text-opacity:1;color:rgb(156 163 175 / var(--tw-text-opacity, 1))}.text-orange-500{--tw-text-opacity:1;color:rgb(249 115 22 / var(--tw-text-opacity, 1))}.text-blue-600{--tw-text-opacity:1;color:rgb(37 99 235 / var(--tw-text-opacity, 1))}.text-purple-600{--tw-text-opacity:1;color:rgb(147 51 234 / var(--tw-text-opacity, 1))}.text-purple-800{--tw-text-opacity:1;color:rgb(107 33 168 / var(--tw-text-opacity, 1))}.text-purple-900{--tw-text-opacity:1;color:rgb(88 28 135 / var(--tw-text-opacity, 1))}.text-red-600{--tw-text-opacity:1;color:rgb(220 38 38 / var(--tw-text-opacity, 1))}.text-red-900{--tw-text-opacity:1;color:rgb(127 29 29 / var(--tw-text-opacity, 1))}.text-yellow-600{--tw-text-opacity:1;color:rgb(202 138 4 / var(--tw-text-opacity, 1))}.text-gray-300{--tw-text-opacity:1;color:rgb(209 213 219 / var(--tw-text-opacity, 1))}.text-green-800{--tw-text-opacity:1;color:rgb(22 101 52 / var(--tw-text-opacity, 1))}.opacity-0{opacity:0}.opacity-50{opacity:0.5}.opacity-80{opacity:0.8}.opacity-90{opacity:0.9}.opacity-20{opacity:0.2}.shadow-lg{--tw-shadow:0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);--tw-shadow-colored:0 10px 15px -3px var(--tw-shadow-color), 0 4px 6px -4px var(--tw-shadow-color);box-shadow:var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow)}.shadow-md{--tw-shadow:0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);--tw-shadow-colored:0 4px 6px -1px var(--tw-shadow-color), 0 2px 4px -2px var(--tw-shadow-color);box-shadow:var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow)}.shadow-sm{--tw-shadow:0 1px 2px 0 rgb(0 0 0 / 0.05);--tw-shadow-colored:0 1px 2px 0 var(--tw-shadow-color);box-shadow:var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow)}.shadow-xl{--tw-shadow:0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);--tw-shadow-colored:0 20px 25px -5px var(--tw-shadow-color), 0 8px 10px -6px var(--tw-shadow-color);box-shadow:var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow)}.shadow-2xl{--tw-shadow:0 25px 50px -12px rgb(0 0 0 / 0.25);--tw-shadow-colored:0 25px 50px -12px var(--tw-shadow-color);box-shadow:var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow)}.shadow-\[inset_-8px_-8px_20px_rgba\(190\2c 18\2c 60\2c 0\.2\)\2c inset_5px_5px_15px_rgba\(255\2c 255\2c 255\2c 0\.6\)\]{--tw-shadow:inset -8px -8px 20px rgba(190,18,60,0.2),inset 5px 5px 15px rgba(255,255,255,0.6);--tw-shadow-colored:inset -8px -8px 20px var(--tw-shadow-color), inset 5px 5px 15px var(--tw-shadow-color);box-shadow:var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow)}.shadow{--tw-shadow:0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);--tw-shadow-colored:0 1px 3px 0 var(--tw-shadow-color), 0 1px 2px -1px var(--tw-shadow-color);box-shadow:var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow)}.shadow-blue-500\/20{--tw-shadow-color:rgb(59 130 246 / 0.2);--tw-shadow:var(--tw-shadow-colored)}.shadow-blue-500\/50{--tw-shadow-color:rgb(59 130 246 / 0.5);--tw-shadow:var(--tw-shadow-colored)}.ring-1{--tw-ring-offset-shadow:var(--tw-ring-inset) 0 0 0 var(--tw-ring-offset-width) var(--tw-ring-offset-color);--tw-ring-shadow:var(--tw-ring-inset) 0 0 0 calc(1px + var(--tw-ring-offset-width)) var(--tw-ring-color);box-shadow:var(--tw-ring-offset-shadow), var(--tw-ring-shadow), var(--tw-shadow, 0 0 #0000)}.ring-slate-100{--tw-ring-opacity:1;--tw-ring-color:rgb(241 245 249 / var(--tw-ring-opacity, 1))}.blur-xl{--tw-blur:blur(24px);filter:var(--tw-blur) var(--tw-brightness) var(--tw-contrast) var(--tw-grayscale) var(--tw-hue-rotate) var(--tw-invert) var(--tw-saturate) var(--tw-sepia) var(--tw-drop-shadow)}.blur-\[0\.5px\]{--tw-blur:blur(0.5px);filter:var(--tw-blur) var(--tw-brightness) var(--tw-contrast) var(--tw-grayscale) var(--tw-hue-rotate) var(--tw-invert) var(--tw-saturate) var(--tw-sepia) var(--tw-drop-shadow)}.blur-\[1px\]{--tw-blur:blur(1px);filter:var(--tw-blur) var(--tw-brightness) var(--tw-contrast) var(--tw-grayscale) var(--tw-hue-rotate) var(--tw-invert) var(--tw-saturate) var(--tw-sepia) var(--tw-drop-shadow)}.blur-md{--tw-blur:blur(12px);filter:var(--tw-blur) var(--tw-brightness) var(--tw-contrast) var(--tw-grayscale) var(--tw-hue-rotate) var(--tw-invert) var(--tw-saturate) var(--tw-sepia) var(--tw-drop-shadow)}.brightness-110{--tw-brightness:brightness(1.1);filter:var(--tw-blur) var(--tw-brightness) var(--tw-contrast) var(--tw-grayscale) var(--tw-hue-rotate) var(--tw-invert) var(--tw-saturate) var(--tw-sepia) var(--tw-drop-shadow)}.drop-shadow-xl{--tw-drop-shadow:drop-shadow(0 20px 13px rgb(0 0 0 / 0.03)) drop-shadow(0 8px 5px rgb(0 0 0 / 0.08));filter:var(--tw-blur) var(--tw-brightness) var(--tw-contrast) var(--tw-grayscale) var(--tw-hue-rotate) var(--tw-invert) var(--tw-saturate) var(--tw-sepia) var(--tw-drop-shadow)}.drop-shadow-\[0_2px_2px_rgba\(0\2c 0\2c 0\2c 0\.8\)\]{--tw-drop-shadow:drop-shadow(0 2px 2px rgba(0,0,0,0.8));filter:var(--tw-blur) var(--tw-brightness) var(--tw-contrast) var(--tw-grayscale) var(--tw-hue-rotate) var(--tw-invert) var(--tw-saturate) var(--tw-sepia) var(--tw-drop-shadow)}.backdrop-blur{--tw-backdrop-blur:blur(8px);-webkit-backdrop-filter:var(--tw-backdrop-blur) var(--tw-backdrop-brightness) var(--tw-backdrop-contrast) var(--tw-backdrop-grayscale) var(--tw-backdrop-hue-rotate) var(--tw-backdrop-invert) var(--tw-backdrop-opacity) var(--tw-backdrop-saturate) var(--tw-backdrop-sepia);backdrop-filter:var(--tw-backdrop-blur) var(--tw-backdrop-brightness) var(--tw-backdrop-contrast) var(--tw-backdrop-grayscale) var(--tw-backdrop-hue-rotate) var(--tw-backdrop-invert) var(--tw-backdrop-opacity) var(--tw-backdrop-saturate) var(--tw-backdrop-sepia)}.backdrop-blur-sm{--tw-backdrop-blur:blur(4px);-webkit-backdrop-filter:var(--tw-backdrop-blur) var(--tw-backdrop-brightness) var(--tw-backdrop-contrast) var(--tw-backdrop-grayscale) var(--tw-backdrop-hue-rotate) var(--tw-backdrop-invert) var(--tw-backdrop-opacity) var(--tw-backdrop-saturate) var(--tw-backdrop-sepia);backdrop-filter:var(--tw-backdrop-blur) var(--tw-backdrop-brightness) var(--tw-backdrop-contrast) var(--tw-backdrop-grayscale) var(--tw-backdrop-hue-rotate) var(--tw-backdrop-invert) var(--tw-backdrop-opacity) var(--tw-backdrop-saturate) var(--tw-backdrop-sepia)}.transition{transition-property:color, background-color, border-color, fill, stroke, opacity, box-shadow, transform, filter, -webkit-text-decoration-color, -webkit-backdrop-filter;transition-property:color, background-color, border-color, text-decoration-color, fill, stroke, opacity, box-shadow, transform, filter, backdrop-filter;transition-property:color, background-color, border-color, text-decoration-color, fill, stroke, opacity, box-shadow, transform, filter, backdrop-filter, -webkit-text-decoration-color, -webkit-backdrop-filter;transition-timing-function:cubic-bezier(0.4, 0, 0.2, 1);transition-duration:150ms}.transition-all{transition-property:all;transition-timing-function:cubic-bezier(0.4, 0, 0.2, 1);transition-duration:150ms}.transition-opacity{transition-property:opacity;transition-timing-function:cubic-bezier(0.4, 0, 0.2, 1);transition-duration:150ms}.transition-colors{transition-property:color, background-color, border-color, fill, stroke, -webkit-text-decoration-color;transition-property:color, background-color, border-color, text-decoration-color, fill, stroke;transition-property:color, background-color, border-color, text-decoration-color, fill, stroke, -webkit-text-decoration-color;transition-timing-function:cubic-bezier(0.4, 0, 0.2, 1);transition-duration:150ms}.duration-300{transition-duration:300ms}.duration-1000{transition-duration:1000ms}.hover\:-translate-y-0\.5:hover{--tw-translate-y:-0.125rem;transform:translate(var(--tw-translate-x), var(--tw-translate-y)) rotate(var(--tw-rotate)) skewX(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y))}.hover\:bg-gray-50:hover{--tw-bg-opacity:1;background-color:rgb(249 250 251 / var(--tw-bg-opacity, 1))}.hover\:bg-orange-200:hover{--tw-bg-opacity:1;background-color:rgb(254 215 170 / var(--tw-bg-opacity, 1))}.hover\:bg-blue-600:hover{--tw-bg-opacity:1;background-color:rgb(37 99 235 / var(--tw-bg-opacity, 1))}.hover\:bg-purple-600:hover{--tw-bg-opacity:1;background-color:rgb(147 51 234 / var(--tw-bg-opacity, 1))}.hover\:shadow-blue-500\/40:hover{--tw-shadow-color:rgb(59 130 246 / 0.4);--tw-shadow:var(--tw-shadow-colored)}.active\:cursor-grabbing:active{cursor:grabbing}.disabled\:cursor-not-allowed:disabled{cursor:not-allowed}.disabled\:opacity-50:disabled{opacity:0.5}.group:hover .group-hover\:-translate-y-2{--tw-translate-y:-0.5rem;transform:translate(var(--tw-translate-x), var(--tw-translate-y)) rotate(var(--tw-rotate)) skewX(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y))}.group:hover .group-hover\:scale-105{--tw-scale-x:1.05;--tw-scale-y:1.05;transform:translate(var(--tw-translate-x), var(--tw-translate-y)) rotate(var(--tw-rotate)) skewX(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y))}.group:hover .group-hover\:opacity-100{opacity:1}@media (min-width: 768px){.md\:bottom-10{bottom:2.5rem}.md\:right-10{right:2.5rem}.md\:right-8{right:2rem}.md\:top-8{top:2rem}.md\:mb-0{margin-bottom:0px}.md\:mb-3{margin-bottom:0.75rem}.md\:ml-2{margin-left:0.5rem}.md\:h-16{height:4rem}.md\:h-9{height:2.25rem}.md\:max-h-none{max-height:none}.md\:w-80{width:20rem}.md\:w-9{width:2.25rem}.md\:w-56{width:14rem}.md\:scale-100{--tw-scale-x:1;--tw-scale-y:1;transform:translate(var(--tw-translate-x), var(--tw-translate-y)) rotate(var(--tw-rotate)) skewX(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y))}.md\:flex-row{flex-direction:row}.md\:gap-2{gap:0.5rem}.md\:gap-3{gap:0.75rem}.md\:gap-4{gap:1rem}.md\:space-y-4 > :not([hidden]) ~ :not([hidden]){--tw-space-y-reverse:0;margin-top:calc(1rem * calc(1 - var(--tw-space-y-reverse)));margin-bottom:calc(1rem * var(--tw-space-y-reverse))}.md\:rounded-2xl{border-radius:1rem}.md\:border-8{border-width:8px}.md\:border-l{border-left-width:1px}.md\:border-t-0{border-top-width:0px}.md\:p-0{padding:0px}.md\:p-5{padding:1.25rem}.md\:p-4{padding:1rem}.md\:px-4{padding-left:1rem;padding-right:1rem}.md\:px-6{padding-left:1.5rem;padding-right:1.5rem}.md\:py-2{padding-top:0.5rem;padding-bottom:0.5rem}.md\:py-2\.5{padding-top:0.625rem;padding-bottom:0.625rem}.md\:py-3{padding-top:0.75rem;padding-bottom:0.75rem}.md\:text-base{font-size:1rem;line-height:1.5rem}.md\:text-sm{font-size:0.875rem;line-height:1.25rem}.md\:text-xl{font-size:1.25rem;line-height:1.75rem}}</style><style id="imt-injected-styles">
+      /* 翻译加载器样式 */
+      .imt-loading-indicator {
+        vertical-align: middle !important;
+        width: 10px !important;
+        height: 10px !important;
+        display: inline-block !important;
+        margin: 0 4px !important;
+        border: 2px rgba(221, 244, 255, 0.6) solid !important;
+        border-top: 2px rgba(0, 0, 0, 0.375) solid !important;
+        border-left: 2px rgba(0, 0, 0, 0.375) solid !important;
+        border-radius: 50% !important;
+        padding: 0 !important;
+        -webkit-animation: imt-loading-animation 0.6s infinite linear !important;
+        animation: imt-loading-animation 0.6s infinite linear !important;
+      }
+
+      @-webkit-keyframes imt-loading-animation {
+        from {
+          -webkit-transform: rotate(0deg);
+        }
+
+        to {
+          -webkit-transform: rotate(359deg);
+        }
+      }
+
+      @keyframes imt-loading-animation {
+        from {
+          transform: rotate(0deg);
+        }
+
+        to {
+          transform: rotate(359deg);
+        }
+      }
+      .se_imt_html {
+        height: 100%;
+      }
+      .se_imt_html body {
+        position: relative;
+        min-height: 100%;
+        top: 40px;
+      }
+      @media print {
+        #imt-webext {
+          display: none !important;
+        }
+      }
+    </style><style>*, ::before, ::after{--tw-border-spacing-x:0;--tw-border-spacing-y:0;--tw-translate-x:0;--tw-translate-y:0;--tw-rotate:0;--tw-skew-x:0;--tw-skew-y:0;--tw-scale-x:1;--tw-scale-y:1;--tw-pan-x: ;--tw-pan-y: ;--tw-pinch-zoom: ;--tw-scroll-snap-strictness:proximity;--tw-gradient-from-position: ;--tw-gradient-via-position: ;--tw-gradient-to-position: ;--tw-ordinal: ;--tw-slashed-zero: ;--tw-numeric-figure: ;--tw-numeric-spacing: ;--tw-numeric-fraction: ;--tw-ring-inset: ;--tw-ring-offset-width:0px;--tw-ring-offset-color:#fff;--tw-ring-color:rgb(59 130 246 / 0.5);--tw-ring-offset-shadow:0 0 #0000;--tw-ring-shadow:0 0 #0000;--tw-shadow:0 0 #0000;--tw-shadow-colored:0 0 #0000;--tw-blur: ;--tw-brightness: ;--tw-contrast: ;--tw-grayscale: ;--tw-hue-rotate: ;--tw-invert: ;--tw-saturate: ;--tw-sepia: ;--tw-drop-shadow: ;--tw-backdrop-blur: ;--tw-backdrop-brightness: ;--tw-backdrop-contrast: ;--tw-backdrop-grayscale: ;--tw-backdrop-hue-rotate: ;--tw-backdrop-invert: ;--tw-backdrop-opacity: ;--tw-backdrop-saturate: ;--tw-backdrop-sepia: ;--tw-contain-size: ;--tw-contain-layout: ;--tw-contain-paint: ;--tw-contain-style: }::backdrop{--tw-border-spacing-x:0;--tw-border-spacing-y:0;--tw-translate-x:0;--tw-translate-y:0;--tw-rotate:0;--tw-skew-x:0;--tw-skew-y:0;--tw-scale-x:1;--tw-scale-y:1;--tw-pan-x: ;--tw-pan-y: ;--tw-pinch-zoom: ;--tw-scroll-snap-strictness:proximity;--tw-gradient-from-position: ;--tw-gradient-via-position: ;--tw-gradient-to-position: ;--tw-ordinal: ;--tw-slashed-zero: ;--tw-numeric-figure: ;--tw-numeric-spacing: ;--tw-numeric-fraction: ;--tw-ring-inset: ;--tw-ring-offset-width:0px;--tw-ring-offset-color:#fff;--tw-ring-color:rgb(59 130 246 / 0.5);--tw-ring-offset-shadow:0 0 #0000;--tw-ring-shadow:0 0 #0000;--tw-shadow:0 0 #0000;--tw-shadow-colored:0 0 #0000;--tw-blur: ;--tw-brightness: ;--tw-contrast: ;--tw-grayscale: ;--tw-hue-rotate: ;--tw-invert: ;--tw-saturate: ;--tw-sepia: ;--tw-drop-shadow: ;--tw-backdrop-blur: ;--tw-backdrop-brightness: ;--tw-backdrop-contrast: ;--tw-backdrop-grayscale: ;--tw-backdrop-hue-rotate: ;--tw-backdrop-invert: ;--tw-backdrop-opacity: ;--tw-backdrop-saturate: ;--tw-backdrop-sepia: ;--tw-contain-size: ;--tw-contain-layout: ;--tw-contain-paint: ;--tw-contain-style: }/* ! tailwindcss v3.4.17 | MIT License | https://tailwindcss.com */*,::after,::before{box-sizing:border-box;border-width:0;border-style:solid;border-color:#e5e7eb}::after,::before{--tw-content:''}:host,html{line-height:1.5;-webkit-text-size-adjust:100%;-moz-tab-size:4;tab-size:4;font-family:ui-sans-serif, system-ui, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";font-feature-settings:normal;font-variation-settings:normal;-webkit-tap-highlight-color:transparent}body{margin:0;line-height:inherit}hr{height:0;color:inherit;border-top-width:1px}abbr:where([title]){-webkit-text-decoration:underline dotted;text-decoration:underline dotted}h1,h2,h3,h4,h5,h6{font-size:inherit;font-weight:inherit}a{color:inherit;text-decoration:inherit}b,strong{font-weight:bolder}code,kbd,pre,samp{font-family:ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;font-feature-settings:normal;font-variation-settings:normal;font-size:1em}small{font-size:80%}sub,sup{font-size:75%;line-height:0;position:relative;vertical-align:baseline}sub{bottom:-.25em}sup{top:-.5em}table{text-indent:0;border-color:inherit;border-collapse:collapse}button,input,optgroup,select,textarea{font-family:inherit;font-feature-settings:inherit;font-variation-settings:inherit;font-size:100%;font-weight:inherit;line-height:inherit;letter-spacing:inherit;color:inherit;margin:0;padding:0}button,select{text-transform:none}button,input:where([type=button]),input:where([type=reset]),input:where([type=submit]){-webkit-appearance:button;background-color:transparent;background-image:none}:-moz-focusring{outline:auto}:-moz-ui-invalid{box-shadow:none}progress{vertical-align:baseline}::-webkit-inner-spin-button,::-webkit-outer-spin-button{height:auto}[type=search]{-webkit-appearance:textfield;outline-offset:-2px}::-webkit-search-decoration{-webkit-appearance:none}::-webkit-file-upload-button{-webkit-appearance:button;font:inherit}summary{display:list-item}blockquote,dd,dl,figure,h1,h2,h3,h4,h5,h6,hr,p,pre{margin:0}fieldset{margin:0;padding:0}legend{padding:0}menu,ol,ul{list-style:none;margin:0;padding:0}dialog{padding:0}textarea{resize:vertical}input::placeholder,textarea::placeholder{opacity:1;color:#9ca3af}[role=button],button{cursor:pointer}:disabled{cursor:default}audio,canvas,embed,iframe,img,object,svg,video{display:block;vertical-align:middle}img,video{max-width:100%;height:auto}[hidden]:where(:not([hidden=until-found])){display:none}.pointer-events-none{pointer-events:none}.absolute{position:absolute}.relative{position:relative}.inset-0{inset:0px}.-inset-4{inset:-1rem}.bottom-0{bottom:0px}.bottom-2{bottom:0.5rem}.left-1\/2{left:50%}.left-4{left:1rem}.right-2{right:0.5rem}.top-1\/2{top:50%}.top-2{top:0.5rem}.top-4{top:1rem}.-bottom-8{bottom:-2rem}.bottom-10{bottom:2.5rem}.right-10{right:2.5rem}.left-6{left:1.5rem}.left-\[10\%\]{left:10%}.left-\[15\%\]{left:15%}.left-\[20\%\]{left:20%}.left-\[30\%\]{left:30%}.left-\[40\%\]{left:40%}.left-\[45\%\]{left:45%}.left-\[50\%\]{left:50%}.left-\[60\%\]{left:60%}.left-\[70\%\]{left:70%}.left-\[75\%\]{left:75%}.left-\[80\%\]{left:80%}.left-\[85\%\]{left:85%}.top-6{top:1.5rem}.top-\[10\%\]{top:10%}.top-\[15\%\]{top:15%}.top-\[20\%\]{top:20%}.top-\[25\%\]{top:25%}.top-\[30\%\]{top:30%}.top-\[35\%\]{top:35%}.top-\[40\%\]{top:40%}.top-\[45\%\]{top:45%}.top-\[5\%\]{top:5%}.top-\[50\%\]{top:50%}.top-\[55\%\]{top:55%}.top-\[60\%\]{top:60%}.top-\[65\%\]{top:65%}.top-\[70\%\]{top:70%}.top-\[75\%\]{top:75%}.top-\[80\%\]{top:80%}.top-\[85\%\]{top:85%}.top-\[90\%\]{top:90%}.z-40{z-index:40}.z-50{z-index:50}.z-10{z-index:10}.z-20{z-index:20}.mx-auto{margin-left:auto;margin-right:auto}.mb-2{margin-bottom:0.5rem}.mt-1{margin-top:0.25rem}.-mt-16{margin-top:-4rem}.-mt-20{margin-top:-5rem}.-mt-40{margin-top:-10rem}.mt-20{margin-top:5rem}.mt-2{margin-top:0.5rem}.mt-4{margin-top:1rem}.flex{display:flex}.h-screen{height:100vh}.h-12{height:3rem}.h-16{height:4rem}.h-2\.5{height:0.625rem}.h-20{height:5rem}.h-7{height:1.75rem}.h-\[85vw\]{height:85vw}.h-full{height:100%}.h-2{height:0.5rem}.h-32{height:8rem}.h-8{height:2rem}.h-auto{height:auto}.h-4{height:1rem}.h-1\.5{height:0.375rem}.h-3{height:0.75rem}.h-40{height:10rem}.h-48{height:12rem}.h-56{height:14rem}.h-6{height:1.5rem}.h-14{height:3.5rem}.max-h-\[30vh\]{max-height:30vh}.max-h-\[500px\]{max-height:500px}.max-h-full{max-height:100%}.min-h-\[60vh\]{min-height:60vh}.w-12{width:3rem}.w-16{width:4rem}.w-2\.5{width:0.625rem}.w-40{width:10rem}.w-7{width:1.75rem}.w-\[85vw\]{width:85vw}.w-full{width:100%}.w-1{width:0.25rem}.w-10{width:2.5rem}.w-2{width:0.5rem}.w-4{width:1rem}.w-72{width:18rem}.w-8{width:2rem}.w-1\.5{width:0.375rem}.w-3{width:0.75rem}.w-auto{width:auto}.w-14{width:3.5rem}.max-w-\[500px\]{max-width:500px}.flex-1{flex:1 1 0%}.-translate-x-1\/2{--tw-translate-x:-50%;transform:translate(var(--tw-translate-x), var(--tw-translate-y)) rotate(var(--tw-rotate)) skewX(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y))}.-translate-y-1\/2{--tw-translate-y:-50%;transform:translate(var(--tw-translate-x), var(--tw-translate-y)) rotate(var(--tw-rotate)) skewX(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y))}.-rotate-45{--tw-rotate:-45deg;transform:translate(var(--tw-translate-x), var(--tw-translate-y)) rotate(var(--tw-rotate)) skewX(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y))}.scale-125{--tw-scale-x:1.25;--tw-scale-y:1.25;transform:translate(var(--tw-translate-x), var(--tw-translate-y)) rotate(var(--tw-rotate)) skewX(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y))}.scale-75{--tw-scale-x:.75;--tw-scale-y:.75;transform:translate(var(--tw-translate-x), var(--tw-translate-y)) rotate(var(--tw-rotate)) skewX(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y))}.scale-105{--tw-scale-x:1.05;--tw-scale-y:1.05;transform:translate(var(--tw-translate-x), var(--tw-translate-y)) rotate(var(--tw-rotate)) skewX(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y))}@keyframes bounce{0%, 100%{transform:translateY(-25%);animation-timing-function:cubic-bezier(0.8,0,1,1)}50%{transform:none;animation-timing-function:cubic-bezier(0,0,0.2,1)}}.animate-bounce{animation:bounce 1s infinite}.cursor-grab{cursor:grab}.cursor-not-allowed{cursor:not-allowed}.list-inside{list-style-position:inside}.list-disc{list-style-type:disc}.flex-col{flex-direction:column}.items-center{align-items:center}.justify-center{justify-content:center}.justify-between{justify-content:space-between}.gap-0{gap:0px}.gap-1{gap:0.25rem}.gap-2{gap:0.5rem}.gap-3{gap:0.75rem}.gap-4{gap:1rem}.gap-16{gap:4rem}.space-y-1 > :not([hidden]) ~ :not([hidden]){--tw-space-y-reverse:0;margin-top:calc(0.25rem * calc(1 - var(--tw-space-y-reverse)));margin-bottom:calc(0.25rem * var(--tw-space-y-reverse))}.space-y-3 > :not([hidden]) ~ :not([hidden]){--tw-space-y-reverse:0;margin-top:calc(0.75rem * calc(1 - var(--tw-space-y-reverse)));margin-bottom:calc(0.75rem * var(--tw-space-y-reverse))}.overflow-hidden{overflow:hidden}.overflow-y-auto{overflow-y:auto}.whitespace-nowrap{white-space:nowrap}.rounded{border-radius:0.25rem}.rounded-full{border-radius:9999px}.rounded-lg{border-radius:0.5rem}.rounded-xl{border-radius:0.75rem}.rounded-2xl{border-radius:1rem}.rounded-sm{border-radius:0.125rem}.border{border-width:1px}.border-2{border-width:2px}.border-4{border-width:4px}.border-b{border-bottom-width:1px}.border-t{border-top-width:1px}.border-amber-100{--tw-border-opacity:1;border-color:rgb(254 243 199 / var(--tw-border-opacity, 1))}.border-amber-200{--tw-border-opacity:1;border-color:rgb(253 230 138 / var(--tw-border-opacity, 1))}.border-blue-100{--tw-border-opacity:1;border-color:rgb(219 234 254 / var(--tw-border-opacity, 1))}.border-gray-100{--tw-border-opacity:1;border-color:rgb(243 244 246 / var(--tw-border-opacity, 1))}.border-gray-200{--tw-border-opacity:1;border-color:rgb(229 231 235 / var(--tw-border-opacity, 1))}.border-gray-200\/50{border-color:rgb(229 231 235 / 0.5)}.border-purple-300{--tw-border-opacity:1;border-color:rgb(216 180 254 / var(--tw-border-opacity, 1))}.border-red-300{--tw-border-opacity:1;border-color:rgb(252 165 165 / var(--tw-border-opacity, 1))}.border-white{--tw-border-opacity:1;border-color:rgb(255 255 255 / var(--tw-border-opacity, 1))}.border-white\/50{border-color:rgb(255 255 255 / 0.5)}.border-yellow-300{--tw-border-opacity:1;border-color:rgb(253 224 71 / var(--tw-border-opacity, 1))}.border-gray-300{--tw-border-opacity:1;border-color:rgb(209 213 219 / var(--tw-border-opacity, 1))}.border-slate-200{--tw-border-opacity:1;border-color:rgb(226 232 240 / var(--tw-border-opacity, 1))}.border-purple-400{--tw-border-opacity:1;border-color:rgb(192 132 252 / var(--tw-border-opacity, 1))}.bg-amber-50{--tw-bg-opacity:1;background-color:rgb(255 251 235 / var(--tw-bg-opacity, 1))}.bg-amber-50\/90{background-color:rgb(255 251 235 / 0.9)}.bg-blue-300{--tw-bg-opacity:1;background-color:rgb(147 197 253 / var(--tw-bg-opacity, 1))}.bg-blue-50{--tw-bg-opacity:1;background-color:rgb(239 246 255 / var(--tw-bg-opacity, 1))}.bg-blue-500{--tw-bg-opacity:1;background-color:rgb(59 130 246 / var(--tw-bg-opacity, 1))}.bg-gray-300{--tw-bg-opacity:1;background-color:rgb(209 213 219 / var(--tw-bg-opacity, 1))}.bg-orange-100{--tw-bg-opacity:1;background-color:rgb(255 237 213 / var(--tw-bg-opacity, 1))}.bg-purple-100{--tw-bg-opacity:1;background-color:rgb(243 232 255 / var(--tw-bg-opacity, 1))}.bg-purple-400{--tw-bg-opacity:1;background-color:rgb(192 132 252 / var(--tw-bg-opacity, 1))}.bg-purple-50{--tw-bg-opacity:1;background-color:rgb(250 245 255 / var(--tw-bg-opacity, 1))}.bg-red-100{--tw-bg-opacity:1;background-color:rgb(254 226 226 / var(--tw-bg-opacity, 1))}.bg-red-400{--tw-bg-opacity:1;background-color:rgb(248 113 113 / var(--tw-bg-opacity, 1))}.bg-slate-50\/50{background-color:rgb(248 250 252 / 0.5)}.bg-white{--tw-bg-opacity:1;background-color:rgb(255 255 255 / var(--tw-bg-opacity, 1))}.bg-white\/40{background-color:rgb(255 255 255 / 0.4)}.bg-white\/50{background-color:rgb(255 255 255 / 0.5)}.bg-white\/80{background-color:rgb(255 255 255 / 0.8)}.bg-yellow-100{--tw-bg-opacity:1;background-color:rgb(254 249 195 / var(--tw-bg-opacity, 1))}.bg-gray-100{--tw-bg-opacity:1;background-color:rgb(243 244 246 / var(--tw-bg-opacity, 1))}.bg-gray-200{--tw-bg-opacity:1;background-color:rgb(229 231 235 / var(--tw-bg-opacity, 1))}.bg-green-400\/20{background-color:rgb(74 222 128 / 0.2)}.bg-orange-400{--tw-bg-opacity:1;background-color:rgb(251 146 60 / var(--tw-bg-opacity, 1))}.bg-blue-400{--tw-bg-opacity:1;background-color:rgb(96 165 250 / var(--tw-bg-opacity, 1))}.bg-green-500{--tw-bg-opacity:1;background-color:rgb(34 197 94 / var(--tw-bg-opacity, 1))}.bg-purple-500{--tw-bg-opacity:1;background-color:rgb(168 85 247 / var(--tw-bg-opacity, 1))}.bg-rose-100{--tw-bg-opacity:1;background-color:rgb(255 228 230 / var(--tw-bg-opacity, 1))}.bg-white\/30{background-color:rgb(255 255 255 / 0.3)}.bg-white\/60{background-color:rgb(255 255 255 / 0.6)}.bg-white\/70{background-color:rgb(255 255 255 / 0.7)}.bg-gradient-to-br{background-image:linear-gradient(to bottom right, var(--tw-gradient-stops))}.bg-gradient-to-r{background-image:linear-gradient(to right, var(--tw-gradient-stops))}.from-blue-500{--tw-gradient-from:#3b82f6 var(--tw-gradient-from-position);--tw-gradient-to:rgb(59 130 246 / 0) var(--tw-gradient-to-position);--tw-gradient-stops:var(--tw-gradient-from), var(--tw-gradient-to)}.from-blue-600{--tw-gradient-from:#2563eb var(--tw-gradient-from-position);--tw-gradient-to:rgb(37 99 235 / 0) var(--tw-gradient-to-position);--tw-gradient-stops:var(--tw-gradient-from), var(--tw-gradient-to)}.from-rose-200{--tw-gradient-from:#fecdd3 var(--tw-gradient-from-position);--tw-gradient-to:rgb(254 205 211 / 0) var(--tw-gradient-to-position);--tw-gradient-stops:var(--tw-gradient-from), var(--tw-gradient-to)}.from-white\/70{--tw-gradient-from:rgb(255 255 255 / 0.7) var(--tw-gradient-from-position);--tw-gradient-to:rgb(255 255 255 / 0) var(--tw-gradient-to-position);--tw-gradient-stops:var(--tw-gradient-from), var(--tw-gradient-to)}.via-rose-300{--tw-gradient-to:rgb(253 164 175 / 0)  var(--tw-gradient-to-position);--tw-gradient-stops:var(--tw-gradient-from), #fda4af var(--tw-gradient-via-position), var(--tw-gradient-to)}.to-indigo-600{--tw-gradient-to:#4f46e5 var(--tw-gradient-to-position)}.to-rose-400{--tw-gradient-to:#fb7185 var(--tw-gradient-to-position)}.to-transparent{--tw-gradient-to:transparent var(--tw-gradient-to-position)}.bg-clip-text{-webkit-background-clip:text;background-clip:text}.object-contain{object-fit:contain}.p-2{padding:0.5rem}.p-3{padding:0.75rem}.p-4{padding:1rem}.p-5{padding:1.25rem}.px-1{padding-left:0.25rem;padding-right:0.25rem}.px-2{padding-left:0.5rem;padding-right:0.5rem}.px-3{padding-left:0.75rem;padding-right:0.75rem}.py-1{padding-top:0.25rem;padding-bottom:0.25rem}.py-1\.5{padding-top:0.375rem;padding-bottom:0.375rem}.py-2{padding-top:0.5rem;padding-bottom:0.5rem}.px-6{padding-left:1.5rem;padding-right:1.5rem}.py-3{padding-top:0.75rem;padding-bottom:0.75rem}.text-center{text-align:center}.font-sans{font-family:ui-sans-serif, system-ui, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji"}.text-2xl{font-size:1.5rem;line-height:2rem}.text-\[10px\]{font-size:10px}.text-lg{font-size:1.125rem;line-height:1.75rem}.text-sm{font-size:0.875rem;line-height:1.25rem}.text-xs{font-size:0.75rem;line-height:1rem}.text-xl{font-size:1.25rem;line-height:1.75rem}.text-base{font-size:1rem;line-height:1.5rem}.font-bold{font-weight:700}.font-medium{font-weight:500}.uppercase{text-transform:uppercase}.leading-relaxed{line-height:1.625}.leading-tight{line-height:1.25}.text-slate-800{--tw-text-opacity:1;color:rgb(30 41 59 / var(--tw-text-opacity, 1))}.text-amber-700\/80{color:rgb(180 83 9 / 0.8)}.text-amber-800{--tw-text-opacity:1;color:rgb(146 64 14 / var(--tw-text-opacity, 1))}.text-blue-700\/80{color:rgb(29 78 216 / 0.8)}.text-blue-800{--tw-text-opacity:1;color:rgb(30 64 175 / var(--tw-text-opacity, 1))}.text-gray-400{--tw-text-opacity:1;color:rgb(156 163 175 / var(--tw-text-opacity, 1))}.text-gray-500{--tw-text-opacity:1;color:rgb(107 114 128 / var(--tw-text-opacity, 1))}.text-orange-600{--tw-text-opacity:1;color:rgb(234 88 12 / var(--tw-text-opacity, 1))}.text-purple-600{--tw-text-opacity:1;color:rgb(147 51 234 / var(--tw-text-opacity, 1))}.text-purple-900{--tw-text-opacity:1;color:rgb(88 28 135 / var(--tw-text-opacity, 1))}.text-red-600{--tw-text-opacity:1;color:rgb(220 38 38 / var(--tw-text-opacity, 1))}.text-red-900{--tw-text-opacity:1;color:rgb(127 29 29 / var(--tw-text-opacity, 1))}.text-transparent{color:transparent}.text-white{--tw-text-opacity:1;color:rgb(255 255 255 / var(--tw-text-opacity, 1))}.text-yellow-600{--tw-text-opacity:1;color:rgb(202 138 4 / var(--tw-text-opacity, 1))}.text-orange-500{--tw-text-opacity:1;color:rgb(249 115 22 / var(--tw-text-opacity, 1))}.text-blue-600{--tw-text-opacity:1;color:rgb(37 99 235 / var(--tw-text-opacity, 1))}.text-purple-800{--tw-text-opacity:1;color:rgb(107 33 168 / var(--tw-text-opacity, 1))}.opacity-80{opacity:0.8}.opacity-0{opacity:0}.opacity-50{opacity:0.5}.opacity-90{opacity:0.9}.shadow{--tw-shadow:0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);--tw-shadow-colored:0 1px 3px 0 var(--tw-shadow-color), 0 1px 2px -1px var(--tw-shadow-color);box-shadow:var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow)}.shadow-lg{--tw-shadow:0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);--tw-shadow-colored:0 10px 15px -3px var(--tw-shadow-color), 0 4px 6px -4px var(--tw-shadow-color);box-shadow:var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow)}.shadow-md{--tw-shadow:0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);--tw-shadow-colored:0 4px 6px -1px var(--tw-shadow-color), 0 2px 4px -2px var(--tw-shadow-color);box-shadow:var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow)}.shadow-sm{--tw-shadow:0 1px 2px 0 rgb(0 0 0 / 0.05);--tw-shadow-colored:0 1px 2px 0 var(--tw-shadow-color);box-shadow:var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow)}.shadow-xl{--tw-shadow:0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);--tw-shadow-colored:0 20px 25px -5px var(--tw-shadow-color), 0 8px 10px -6px var(--tw-shadow-color);box-shadow:var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow)}.shadow-2xl{--tw-shadow:0 25px 50px -12px rgb(0 0 0 / 0.25);--tw-shadow-colored:0 25px 50px -12px var(--tw-shadow-color);box-shadow:var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow)}.shadow-\[inset_-8px_-8px_20px_rgba\(190\2c 18\2c 60\2c 0\.2\)\2c inset_5px_5px_15px_rgba\(255\2c 255\2c 255\2c 0\.6\)\]{--tw-shadow:inset -8px -8px 20px rgba(190,18,60,0.2),inset 5px 5px 15px rgba(255,255,255,0.6);--tw-shadow-colored:inset -8px -8px 20px var(--tw-shadow-color), inset 5px 5px 15px var(--tw-shadow-color);box-shadow:var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow)}.shadow-blue-500\/20{--tw-shadow-color:rgb(59 130 246 / 0.2);--tw-shadow:var(--tw-shadow-colored)}.shadow-blue-500\/50{--tw-shadow-color:rgb(59 130 246 / 0.5);--tw-shadow:var(--tw-shadow-colored)}.ring-1{--tw-ring-offset-shadow:var(--tw-ring-inset) 0 0 0 var(--tw-ring-offset-width) var(--tw-ring-offset-color);--tw-ring-shadow:var(--tw-ring-inset) 0 0 0 calc(1px + var(--tw-ring-offset-width)) var(--tw-ring-color);box-shadow:var(--tw-ring-offset-shadow), var(--tw-ring-shadow), var(--tw-shadow, 0 0 #0000)}.ring-slate-100{--tw-ring-opacity:1;--tw-ring-color:rgb(241 245 249 / var(--tw-ring-opacity, 1))}.blur-xl{--tw-blur:blur(24px);filter:var(--tw-blur) var(--tw-brightness) var(--tw-contrast) var(--tw-grayscale) var(--tw-hue-rotate) var(--tw-invert) var(--tw-saturate) var(--tw-sepia) var(--tw-drop-shadow)}.blur-\[0\.5px\]{--tw-blur:blur(0.5px);filter:var(--tw-blur) var(--tw-brightness) var(--tw-contrast) var(--tw-grayscale) var(--tw-hue-rotate) var(--tw-invert) var(--tw-saturate) var(--tw-sepia) var(--tw-drop-shadow)}.blur-\[1px\]{--tw-blur:blur(1px);filter:var(--tw-blur) var(--tw-brightness) var(--tw-contrast) var(--tw-grayscale) var(--tw-hue-rotate) var(--tw-invert) var(--tw-saturate) var(--tw-sepia) var(--tw-drop-shadow)}.blur-md{--tw-blur:blur(12px);filter:var(--tw-blur) var(--tw-brightness) var(--tw-contrast) var(--tw-grayscale) var(--tw-hue-rotate) var(--tw-invert) var(--tw-saturate) var(--tw-sepia) var(--tw-drop-shadow)}.brightness-110{--tw-brightness:brightness(1.1);filter:var(--tw-blur) var(--tw-brightness) var(--tw-contrast) var(--tw-grayscale) var(--tw-hue-rotate) var(--tw-invert) var(--tw-saturate) var(--tw-sepia) var(--tw-drop-shadow)}.drop-shadow-xl{--tw-drop-shadow:drop-shadow(0 20px 13px rgb(0 0 0 / 0.03)) drop-shadow(0 8px 5px rgb(0 0 0 / 0.08));filter:var(--tw-blur) var(--tw-brightness) var(--tw-contrast) var(--tw-grayscale) var(--tw-hue-rotate) var(--tw-invert) var(--tw-saturate) var(--tw-sepia) var(--tw-drop-shadow)}.drop-shadow-\[0_2px_2px_rgba\(0\2c 0\2c 0\2c 0\.8\)\]{--tw-drop-shadow:drop-shadow(0 2px 2px rgba(0,0,0,0.8));filter:var(--tw-blur) var(--tw-brightness) var(--tw-contrast) var(--tw-grayscale) var(--tw-hue-rotate) var(--tw-invert) var(--tw-saturate) var(--tw-sepia) var(--tw-drop-shadow)}.backdrop-blur{--tw-backdrop-blur:blur(8px);-webkit-backdrop-filter:var(--tw-backdrop-blur) var(--tw-backdrop-brightness) var(--tw-backdrop-contrast) var(--tw-backdrop-grayscale) var(--tw-backdrop-hue-rotate) var(--tw-backdrop-invert) var(--tw-backdrop-opacity) var(--tw-backdrop-saturate) var(--tw-backdrop-sepia);backdrop-filter:var(--tw-backdrop-blur) var(--tw-backdrop-brightness) var(--tw-backdrop-contrast) var(--tw-backdrop-grayscale) var(--tw-backdrop-hue-rotate) var(--tw-backdrop-invert) var(--tw-backdrop-opacity) var(--tw-backdrop-saturate) var(--tw-backdrop-sepia)}.backdrop-blur-sm{--tw-backdrop-blur:blur(4px);-webkit-backdrop-filter:var(--tw-backdrop-blur) var(--tw-backdrop-brightness) var(--tw-backdrop-contrast) var(--tw-backdrop-grayscale) var(--tw-backdrop-hue-rotate) var(--tw-backdrop-invert) var(--tw-backdrop-opacity) var(--tw-backdrop-saturate) var(--tw-backdrop-sepia);backdrop-filter:var(--tw-backdrop-blur) var(--tw-backdrop-brightness) var(--tw-backdrop-contrast) var(--tw-backdrop-grayscale) var(--tw-backdrop-hue-rotate) var(--tw-backdrop-invert) var(--tw-backdrop-opacity) var(--tw-backdrop-saturate) var(--tw-backdrop-sepia)}.transition{transition-property:color, background-color, border-color, fill, stroke, opacity, box-shadow, transform, filter, -webkit-text-decoration-color, -webkit-backdrop-filter;transition-property:color, background-color, border-color, text-decoration-color, fill, stroke, opacity, box-shadow, transform, filter, backdrop-filter;transition-property:color, background-color, border-color, text-decoration-color, fill, stroke, opacity, box-shadow, transform, filter, backdrop-filter, -webkit-text-decoration-color, -webkit-backdrop-filter;transition-timing-function:cubic-bezier(0.4, 0, 0.2, 1);transition-duration:150ms}.transition-all{transition-property:all;transition-timing-function:cubic-bezier(0.4, 0, 0.2, 1);transition-duration:150ms}.transition-opacity{transition-property:opacity;transition-timing-function:cubic-bezier(0.4, 0, 0.2, 1);transition-duration:150ms}.duration-300{transition-duration:300ms}.hover\:-translate-y-0\.5:hover{--tw-translate-y:-0.125rem;transform:translate(var(--tw-translate-x), var(--tw-translate-y)) rotate(var(--tw-rotate)) skewX(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y))}.hover\:bg-gray-50:hover{--tw-bg-opacity:1;background-color:rgb(249 250 251 / var(--tw-bg-opacity, 1))}.hover\:bg-orange-200:hover{--tw-bg-opacity:1;background-color:rgb(254 215 170 / var(--tw-bg-opacity, 1))}.hover\:bg-blue-600:hover{--tw-bg-opacity:1;background-color:rgb(37 99 235 / var(--tw-bg-opacity, 1))}.hover\:bg-purple-600:hover{--tw-bg-opacity:1;background-color:rgb(147 51 234 / var(--tw-bg-opacity, 1))}.hover\:shadow-blue-500\/40:hover{--tw-shadow-color:rgb(59 130 246 / 0.4);--tw-shadow:var(--tw-shadow-colored)}.active\:cursor-grabbing:active{cursor:grabbing}.disabled\:cursor-not-allowed:disabled{cursor:not-allowed}.disabled\:opacity-50:disabled{opacity:0.5}.group:hover .group-hover\:scale-105{--tw-scale-x:1.05;--tw-scale-y:1.05;transform:translate(var(--tw-translate-x), var(--tw-translate-y)) rotate(var(--tw-rotate)) skewX(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y))}.group:hover .group-hover\:opacity-100{opacity:1}@media (min-width: 768px){.md\:bottom-10{bottom:2.5rem}.md\:right-10{right:2.5rem}.md\:right-8{right:2rem}.md\:top-8{top:2rem}.md\:mb-0{margin-bottom:0px}.md\:mb-3{margin-bottom:0.75rem}.md\:h-16{height:4rem}.md\:h-9{height:2.25rem}.md\:max-h-none{max-height:none}.md\:w-56{width:14rem}.md\:w-80{width:20rem}.md\:w-9{width:2.25rem}.md\:scale-100{--tw-scale-x:1;--tw-scale-y:1;transform:translate(var(--tw-translate-x), var(--tw-translate-y)) rotate(var(--tw-rotate)) skewX(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y))}.md\:flex-row{flex-direction:row}.md\:gap-2{gap:0.5rem}.md\:gap-3{gap:0.75rem}.md\:space-y-4 > :not([hidden]) ~ :not([hidden]){--tw-space-y-reverse:0;margin-top:calc(1rem * calc(1 - var(--tw-space-y-reverse)));margin-bottom:calc(1rem * var(--tw-space-y-reverse))}.md\:rounded-2xl{border-radius:1rem}.md\:border-8{border-width:8px}.md\:border-l{border-left-width:1px}.md\:border-t-0{border-top-width:0px}.md\:p-0{padding:0px}.md\:p-4{padding:1rem}.md\:p-5{padding:1.25rem}.md\:px-4{padding-left:1rem;padding-right:1rem}.md\:px-6{padding-left:1.5rem;padding-right:1.5rem}.md\:py-2{padding-top:0.5rem;padding-bottom:0.5rem}.md\:py-2\.5{padding-top:0.625rem;padding-bottom:0.625rem}.md\:py-3{padding-top:0.75rem;padding-bottom:0.75rem}.md\:text-base{font-size:1rem;line-height:1.5rem}.md\:text-sm{font-size:0.875rem;line-height:1.25rem}.md\:text-xl{font-size:1.25rem;line-height:1.75rem}}</style></head>
+ <body class="h-screen flex flex-col text-slate-800 font-sans">
+  <header class="h-12 md:h-16 glass-panel flex items-center justify-between px-3 md:px-6 z-50 shadow-sm">
+   <div class="flex items-center gap-3">
+    <div class="w-7 h-7 md:w-9 md:h-9 rounded-xl bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center text-white text-xs md:text-base font-bold shadow-lg">Bio</div>
+    <h1 class="text-lg md:text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-blue-600 to-indigo-600">单克隆抗体制备 交互教学</h1>
+   </div>
+   <div class="flex items-center gap-2">
+    <div class="flex items-center gap-1 bg-white/50 px-2 md:px-4 py-1 md:py-2 rounded-full border border-white">
+     <div id="step-dots" class="flex gap-2">
+                <div class="w-2.5 h-2.5 rounded-full transition-all duration-300 bg-blue-300" id="dot-0"></div>
+            
+                <div class="w-2.5 h-2.5 rounded-full transition-all duration-300 bg-blue-300" id="dot-1"></div>
+            
+                <div class="w-2.5 h-2.5 rounded-full transition-all duration-300 bg-blue-500 scale-125 shadow-lg shadow-blue-500/50" id="dot-2"></div>
+            
+                <div class="w-2.5 h-2.5 rounded-full transition-all duration-300 bg-gray-300" id="dot-3"></div>
+            
+                <div class="w-2.5 h-2.5 rounded-full transition-all duration-300 bg-gray-300" id="dot-4"></div>
+            
+                <div class="w-2.5 h-2.5 rounded-full transition-all duration-300 bg-gray-300" id="dot-5"></div>
+            
+                <div class="w-2.5 h-2.5 rounded-full transition-all duration-300 bg-gray-300" id="dot-6"></div>
+
+                <div class="w-2.5 h-2.5 rounded-full transition-all duration-300 bg-gray-300" id="dot-7"></div>
+            </div>
+    </div>
+   </div>
+  </header>
+  <main class="flex-1 flex flex-col md:flex-row relative overflow-y-auto">
+   <section class="flex-1 relative bg-slate-50/50 flex items-center justify-center min-h-[60vh] p-2 md:p-0" id="game-area">
+    <div id="instruction" class="absolute top-4 left-4 z-50 flex items-center gap-1 md:gap-2 bg-amber-50/90 backdrop-blur px-3 py-2 rounded-full border border-amber-200 text-base md:text-lg font-bold text-amber-800 shadow-md transition-all duration-300">
+     <span>👆</span> <span id="instruction-text">请按照提示操作</span>
+    </div>
+    <div class="absolute inset-0" style="background-image: radial-gradient(#cbd5e1 1px, transparent 1px); background-size: 30px 30px; opacity: 0.3;"></div>
+    <div id="stage" class="w-full h-full relative flex items-center justify-center">
+    </div>
+   </section>
+   <aside class="w-full md:w-80 glass-panel border-t md:border-l md:border-t-0 border-white/50 flex flex-col z-40 shadow-xl transition-all duration-300" id="sidebar">
+    <div class="p-5 border-b border-gray-100 bg-white/50">
+     <h2 class="text-lg font-bold text-slate-800 flex items-center gap-2">📝 实验记录</h2>
+    </div>
+    <div class="flex-1 overflow-y-auto p-3 md:p-5 space-y-3 md:space-y-4 max-h-[30vh] md:max-h-none">
+     <div class="bg-blue-50 p-4 rounded-xl border border-blue-100">
+      <h3 class="text-blue-800 font-bold text-sm mb-2 flex items-center gap-2"> 科学原理</h3>
+      <p class="text-blue-700/80 text-sm leading-relaxed" id="theory-text">动物细胞融合常用诱导剂：PEG（化学法）、灭活病毒（生物法）、电激（物理法）。融合是随机的，会产生多种组合。</p>
+     </div>
+     <div class="bg-amber-50 p-4 rounded-xl border border-amber-100">
+      <h3 class="text-amber-800 font-bold text-sm mb-2 flex items-center gap-2"> 操作任务</h3>
+      <ul class="text-amber-700/80 text-sm space-y-1 list-disc list-inside" id="task-list"><li>选择一种诱导方式进行融合，观察效果</li></ul>
+     </div>
+    </div>
+    <div class="p-3 md:p-5 border-t border-gray-100 bg-white/50">
+     <div class="flex gap-2 md:gap-3 mb-2 md:mb-3">
+      <button id="resetBtn" class="w-full px-3 md:px-4 py-1.5 md:py-2 rounded-xl bg-orange-100 text-orange-600 font-bold hover:bg-orange-200 transition text-xs md:text-sm flex items-center justify-center gap-1 md:gap-2">↺ 重置本步骤</button>
+     </div>
+     <div class="flex gap-2 md:gap-3 mb-2 md:mb-0">
+      <button id="prevBtn" class="px-3 md:px-4 py-2 md:py-2.5 rounded-xl bg-white border border-gray-200 text-gray-500 font-medium hover:bg-gray-50 transition text-xs md:text-sm" style="opacity: 1;">上一步</button>
+      <button id="nextBtn" class="flex-1 px-3 md:px-4 py-2 md:py-2.5 rounded-xl bg-gradient-to-r from-blue-500 to-indigo-600 text-white font-bold shadow-lg shadow-blue-500/20 hover:shadow-blue-500/40 hover:-translate-y-0.5 transition text-xs md:text-sm flex flex-col items-center justify-center gap-0 disabled:opacity-50 disabled:cursor-not-allowed leading-tight opacity-50 cursor-not-allowed" style="display: flex;" disabled=""><span class="flex items-center gap-2">下一步 →</span></button>
+     </div>
+    </div>
+   </aside>
+  </main>
+  <!-- Step 1: 免疫小鼠 -->
+  <template id="tpl-step1">
+   <div class="relative w-full h-full flex items-center justify-center">
+    <div id="mouse-target" class="relative group transition-all duration-300">
+     <div class="absolute -inset-4 bg-green-400/20 rounded-full blur-xl opacity-0 group-hover:opacity-100 transition-opacity"></div>
+     <img src="https://musk-online.fbcontent.cn/pub-musk-ai-studio/workflow/file/picture/zabukUiksXVAZRGWEpJ89L.jpg" class="w-72 h-auto object-contain relative z-10 drop-shadow-xl" alt="实验小鼠">
+     <div id="immune-particles" class="absolute inset-0 pointer-events-none z-20"></div>
+    </div>
+    <div class="absolute bottom-10 right-10 bg-white p-4 rounded-2xl shadow-xl border border-gray-100 flex flex-col items-center gap-2">
+     <span class="text-xs font-bold text-gray-400 uppercase">Tools</span>
+     <div id="syringe-tool" class="draggable-tool w-16 h-32 relative cursor-grab active:cursor-grabbing" draggable="true">
+      <div class="w-4 h-20 bg-gray-100 border border-gray-300 mx-auto rounded-sm relative overflow-hidden">
+       <div class="absolute bottom-0 w-full h-12 bg-orange-400 transition-all" id="syringe-liquid"></div>
+      </div>
+      <div class="w-10 h-2 bg-gray-300 mx-auto -mt-20 rounded"></div>
+      <div class="w-1 h-8 bg-gray-300 mx-auto mt-20"></div>
+      <div class="w-2 h-16 bg-gray-200 mx-auto -mt-40 border border-gray-300" id="syringe-plunger"></div>
+      <div class="w-8 h-2 bg-gray-300 mx-auto -mt-16 rounded"></div>
+      <div class="absolute -bottom-8 w-full text-center text-xs font-bold text-orange-500">抗原注射器</div>
+     </div>
+    </div>
+   </div>
+  </template>
+  <!-- Step 1.5: 提取细胞材料 -->
+  <template id="tpl-step2">
+   <div class="relative w-full h-full flex items-center justify-center">
+    <div class="flex gap-16 items-center">
+     <div class="relative flex flex-col items-center">
+      <div class="h-56 flex items-center justify-center">
+       <img src="https://musk-online.fbcontent.cn/pub-musk-ai-studio/workflow/file/picture/zabukUiksXVAZRGWEpJ89L.jpg" class="max-h-full w-auto object-contain drop-shadow-xl" alt="实验小鼠">
+      </div>
+      <button id="btn-extract-b" class="mt-4 px-6 py-3 bg-blue-500 text-white rounded-full font-bold shadow-lg hover:bg-blue-600 transition flex items-center gap-2"><span>🔬</span> 提取B淋巴细胞</button>
+      <div id="b-cell-display" class="mt-4 flex flex-col items-center gap-2 opacity-0">
+       <div class="text-sm font-bold text-blue-600">已免疫的B淋巴细胞</div>
+       <div class="flex gap-2" id="b-cells"></div>
+      </div>
+     </div>
+     <div class="relative flex flex-col items-center">
+      <div class="h-48 flex items-center justify-center">
+       <div class="w-40 h-40 bg-rose-100 border-4 border-slate-200 rounded-full flex items-center justify-center relative overflow-hidden shadow-xl ring-1 ring-slate-100 group">
+        <!-- 液体充满背景 -->
+        <div class="absolute inset-0 bg-gradient-to-br from-rose-200 via-rose-300 to-rose-400 opacity-90"></div>
+        <!-- 密集悬浮细胞粒子 (模拟细胞系) -->
+        <div class="absolute inset-0 z-10 opacity-80">
+         <!-- 随机分布的大量细胞点 -->
+         <div class="absolute top-[20%] left-[20%] w-2 h-2 bg-white/70 rounded-full blur-[0.5px]"></div>
+         <div class="absolute top-[30%] left-[50%] w-3 h-3 bg-white/60 rounded-full"></div>
+         <div class="absolute top-[60%] left-[30%] w-2.5 h-2.5 bg-white/50 rounded-full"></div>
+         <div class="absolute top-[40%] left-[70%] w-2 h-2 bg-white/70 rounded-full"></div>
+         <div class="absolute top-[70%] left-[60%] w-3 h-3 bg-white/60 rounded-full blur-[0.5px]"></div>
+         <div class="absolute top-[15%] left-[60%] w-1.5 h-1.5 bg-white/80 rounded-full"></div>
+         <div class="absolute top-[50%] left-[15%] w-2 h-2 bg-white/50 rounded-full"></div>
+         <div class="absolute top-[80%] left-[40%] w-2.5 h-2.5 bg-white/60 rounded-full"></div>
+         <div class="absolute top-[25%] left-[80%] w-3 h-3 bg-white/40 rounded-full"></div>
+         <div class="absolute top-[55%] left-[85%] w-2 h-2 bg-white/70 rounded-full"></div>
+         <div class="absolute top-[85%] left-[75%] w-1.5 h-1.5 bg-white/60 rounded-full"></div>
+         <div class="absolute top-[45%] left-[45%] w-4 h-4 bg-white/30 rounded-full blur-[1px]"></div>
+         <div class="absolute top-[10%] left-[40%] w-2 h-2 bg-white/50 rounded-full"></div>
+         <div class="absolute top-[90%] left-[20%] w-2 h-2 bg-white/40 rounded-full"></div>
+         <div class="absolute top-[35%] left-[10%] w-1.5 h-1.5 bg-white/60 rounded-full"></div>
+         <div class="absolute top-[65%] left-[80%] w-2.5 h-2.5 bg-white/50 rounded-full"></div>
+         <div class="absolute top-[5%] left-[70%] w-2 h-2 bg-white/40 rounded-full"></div>
+         <div class="absolute top-[75%] left-[10%] w-2 h-2 bg-white/60 rounded-full"></div>
+        </div>
+        <!-- 容器光泽质感 -->
+        <div class="absolute inset-0 rounded-full shadow-[inset_-8px_-8px_20px_rgba(190,18,60,0.2),inset_5px_5px_15px_rgba(255,255,255,0.6)] pointer-events-none"></div>
+        <div class="absolute top-6 left-6 w-10 h-6 bg-gradient-to-br from-white/70 to-transparent rounded-full blur-md -rotate-45"></div>
+       </div>
+      </div>
+      <div class="text-purple-800 font-bold text-base mt-2">骨髓瘤细胞系</div>
+      <button id="btn-extract-tumor" class="mt-4 px-6 py-3 bg-purple-500 text-white rounded-full font-bold shadow-lg hover:bg-purple-600 transition flex items-center gap-2"><span>🔬</span> 提取骨髓瘤细胞</button>
+      <div id="tumor-cell-display" class="mt-4 flex flex-col items-center gap-2 opacity-0">
+       <div class="text-sm font-bold text-purple-600">骨髓瘤细胞</div>
+       <div class="flex gap-2" id="tumor-cells"></div>
+      </div>
+     </div>
+    </div>
+   </div>
+  </template>
+  <!-- Step 2: 细胞融合 -->
+  <template id="tpl-step3">
+   <div class="relative w-full h-full">
+    <div class="absolute inset-0 flex items-center justify-center pointer-events-none">
+     <div class="petri-dish w-[85vw] h-[85vw] max-w-[500px] max-h-[500px] rounded-full border-4 md:border-8 border-gray-200/50 bg-white/40 backdrop-blur-sm" id="dish-boundary"></div>
+    </div>
+    <div id="cell-container" class="absolute inset-0"></div>
+    <div id="fusion-tools" class="absolute bottom-2 md:bottom-10 right-2 md:right-10 bg-white p-2 md:p-4 rounded-xl md:rounded-2xl shadow-xl border border-gray-100 flex flex-col items-center gap-2 md:gap-3 z-50 scale-75 md:scale-100">
+     <span class="text-xs font-bold text-gray-400 uppercase">选择诱导方式</span>
+     <div class="flex gap-4">
+      <div id="peg-tool" class="draggable-tool w-16 h-20 relative cursor-grab active:cursor-grabbing group flex flex-col items-center" data-type="peg">
+       <div class="w-12 h-16 bg-purple-100 border-2 border-purple-300 rounded-lg relative overflow-hidden shadow-sm group-hover:scale-105 transition">
+        <div class="absolute bottom-0 w-full h-12 bg-purple-400 opacity-80"></div>
+        <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-xs font-bold text-purple-900">PEG</div>
+       </div>
+       <div class="mt-1 text-[10px] font-bold text-purple-600 whitespace-nowrap">聚乙二醇</div>
+      </div>
+      <div id="virus-tool" class="draggable-tool w-16 h-20 relative cursor-grab active:cursor-grabbing group flex flex-col items-center" data-type="virus">
+       <div class="w-12 h-16 bg-red-100 border-2 border-red-300 rounded-lg relative overflow-hidden shadow-sm group-hover:scale-105 transition">
+        <div class="absolute bottom-0 w-full h-12 bg-red-400 opacity-80"></div>
+        <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-xs font-bold text-red-900">Virus</div>
+       </div>
+       <div class="mt-1 text-[10px] font-bold text-red-600 whitespace-nowrap">灭活病毒</div>
+      </div>
+      <div id="electric-tool" class="draggable-tool w-16 h-20 relative cursor-grab active:cursor-grabbing group flex flex-col items-center" data-type="electric">
+       <div class="w-12 h-16 bg-yellow-100 border-2 border-yellow-300 rounded-lg relative overflow-hidden shadow-sm group-hover:scale-105 transition flex items-center justify-center">
+        <span class="text-2xl">⚡</span>
+       </div>
+       <div class="mt-1 text-[10px] font-bold text-yellow-600 whitespace-nowrap">电融合法</div>
+      </div>
+     </div>
+    </div>
+    <div class="absolute top-2 md:top-8 right-2 md:right-8 bg-white/80 backdrop-blur px-2 md:px-4 py-2 md:py-3 rounded-lg shadow border border-gray-200 w-40 md:w-56 text-xs md:text-sm">
+     <div class="text-xs text-gray-500 mb-2 font-bold">融合结果实时统计</div>
+     <div class="space-y-1 text-xs">
+      <div class="flex justify-between text-gray-400">
+       <span>未融合细胞:</span> <span id="count-single" class="font-bold">12</span>
+      </div>
+      <div class="flex justify-between text-gray-400">
+       <span>B-B融合:</span> <span id="count-bb" class="font-bold">0</span>
+      </div>
+      <div class="flex justify-between text-gray-400">
+       <span>瘤-瘤融合:</span> <span id="count-tt" class="font-bold">0</span>
+      </div>
+      <div class="flex justify-between text-purple-600 font-bold bg-purple-50 px-1 rounded">
+       <span>杂交瘤(目标):</span> <span id="count-hybrid">0</span>
+      </div>
+     </div>
+    </div>
+   </div>
+  </template>
+  <!-- Step 3: HAT筛选 -->
+  <template id="tpl-step4">
+   <div class="relative w-full h-full flex flex-col items-center justify-center">
+    <div id="petri-dish-3" class="petri-dish w-[85vw] h-[85vw] max-w-[450px] max-h-[450px] rounded-full bg-red-50 border-4 md:border-8 border-gray-200 relative overflow-hidden shadow-2xl transition-colors duration-1000">
+     <div class="absolute inset-0 flex items-center justify-center text-gray-300 font-bold text-4xl opacity-20 pointer-events-none">CULTURE</div>
+    </div>
+    <div class="absolute bottom-2 md:bottom-10 right-2 md:right-10 flex flex-col gap-2 md:gap-4 scale-75 md:scale-100">
+     <div class="reagent-bottle group cursor-pointer" data-type="normal">
+      <div class="w-20 h-28 bg-blue-100 border-2 border-blue-200 rounded-lg relative flex items-center justify-center shadow-md group-hover:-translate-y-2 transition">
+       <span class="font-bold text-blue-800 text-center text-sm">普通
+        <br>培养基</span>
+      </div>
+     </div>
+     <div class="reagent-bottle group cursor-pointer" data-type="hat">
+      <div class="w-20 h-28 bg-green-100 border-2 border-green-200 rounded-lg relative flex items-center justify-center shadow-md group-hover:-translate-y-2 transition">
+       <span class="font-bold text-green-800 text-center text-sm">HAT
+        <br>培养基</span>
+      </div>
+     </div>
+    </div>
+   </div>
+  </template>
+  <!-- Step 4: 克隆化培养 -->
+  <template id="tpl-step5">
+   <div class="relative w-full h-full flex flex-col items-center justify-center">
+    <div class="bg-slate-800 p-6 rounded-xl shadow-2xl relative">
+     <div class="text-white text-xs mb-2 flex justify-between">
+      <span>96孔板 (有限稀释法)</span> <span class="text-gray-400">目标: 筛选产特定抗体(A型)的杂交瘤</span>
+     </div>
+     <div class="grid grid-cols-12 gap-1 p-3 bg-slate-700/30 rounded-xl" id="elisa-plate"></div>
+    </div>
+    <div class="absolute bottom-2 md:bottom-8 flex gap-2 md:gap-4 flex-wrap justify-center">
+     <button id="btn-dilute" class="px-4 md:px-6 py-1.5 md:py-2 text-xs md:text-sm bg-blue-600 text-white rounded-full shadow-lg hover:bg-blue-700 transition flex items-center gap-1 md:gap-2"><span>💧</span> 1. 稀释并接种</button>
+     <button id="btn-detect" class="px-4 md:px-6 py-1.5 md:py-2 text-xs md:text-sm bg-amber-500 text-white rounded-full shadow-lg hover:bg-amber-600 transition flex items-center gap-1 md:gap-2 opacity-50 cursor-not-allowed" disabled=""><span>🔍</span> 2. 抗体检测</button>
+    </div>
+   </div>
+  </template>
+  <!-- Step 5: 扩大培养 -->
+  <template id="tpl-step6">
+   <div class="relative w-full h-full flex flex-col md:flex-row p-4 gap-4 overflow-y-auto">
+    <!-- 左侧：选择区 -->
+    <div class="w-full md:w-1/3 flex flex-col gap-4 justify-center">
+     <h3 class="text-lg font-bold text-slate-800 mb-2">选择培养方式</h3>
+     <button class="production-btn group relative p-4 bg-white rounded-xl shadow-md border-2 border-transparent hover:border-blue-400 transition text-left" data-mode="vitro">
+      <div class="flex items-center gap-3 mb-2">
+       <div class="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center text-xl">🧪</div>
+       <div class="font-bold text-slate-700">体外培养</div>
+      </div>
+      <p class="text-xs text-slate-500">利用培养液大规模培养，纯度高。</p>
+     </button>
+     <button class="production-btn group relative p-4 bg-white rounded-xl shadow-md border-2 border-transparent hover:border-orange-400 transition text-left" data-mode="vivo">
+      <div class="flex items-center gap-3 mb-2">
+       <div class="w-10 h-10 rounded-full bg-orange-100 flex items-center justify-center text-xl">🐁</div>
+       <div class="font-bold text-slate-700">体内培养</div>
+      </div>
+      <p class="text-xs text-slate-500">注射到小鼠腹腔产生腹水，产量高。</p>
+     </button>
+    </div>
+    <!-- 右侧：数据区 -->
+    <div class="w-full md:w-2/3 flex flex-col gap-4">
+     <!-- 图表卡片 -->
+     <div class="bg-white p-4 rounded-xl shadow-md border border-gray-100 flex-1 min-h-[250px] relative flex flex-col">
+      <h4 class="font-bold text-slate-700 mb-2 text-sm">生长曲线与产量分析</h4>
+      <div class="relative flex-1 w-full">
+       <canvas id="productionChart"></canvas>
+       <div id="chart-placeholder" class="absolute inset-0 flex items-center justify-center bg-white/80 backdrop-blur z-10">
+        <span class="text-gray-400 text-sm">请点击左侧按钮查看数据</span>
+       </div>
+      </div>
+      <div class="mt-2 text-[10px] text-gray-400 text-right italic">Source: Köhler &amp; Milstein, Nature 256, 495–497 (1975)</div>
+     </div>
+     <!-- 对比表格 -->
+     <div class="bg-slate-50 p-4 rounded-xl border border-gray-200">
+      <h4 class="font-bold text-slate-700 mb-2 text-sm">两种方式详细对比</h4>
+      <div class="overflow-x-auto">
+       <table class="w-full text-xs data-table">
+        <thead>
+         <tr>
+          <th class="w-1/4">维度</th>
+          <th class="text-blue-600">体外培养</th>
+          <th class="text-orange-600">体内培养</th>
+         </tr>
+        </thead>
+        <tbody class="text-slate-600">
+         <tr>
+          <td class="font-medium">抗体浓度</td>
+          <td>低 (10-100 μg/mL)</td>
+          <td><span class="text-red-500 font-bold">极高</span> (1-10 mg/mL)</td>
+         </tr>
+         <tr>
+          <td class="font-medium">纯度</td>
+          <td><span class="text-green-600 font-bold">高</span> (干扰少)</td>
+          <td>低 (混有杂蛋白)</td>
+         </tr>
+         <tr>
+          <td class="font-medium">应用</td>
+          <td>工业化生产</td>
+          <td>实验室少量制备</td>
+         </tr>
+        </tbody>
+       </table>
+      </div>
+     </div>
+    </div>
+   </div>
+  </template>
+  <!-- Step 6: 抗体提取 -->
+  <template id="tpl-step7">
+   <div class="relative w-full h-full flex flex-col items-center justify-center gap-8">
+    <div class="flex justify-center gap-8 md:gap-20 items-end">
+     <!-- 体外 -->
+     <div class="flex flex-col items-center gap-2 opacity-0" id="extract-vitro">
+      <div class="w-24 h-32 md:w-32 md:h-40 border-4 border-slate-300 rounded-xl relative bg-blue-50 overflow-hidden shadow-md">
+       <div class="absolute bottom-0 w-full h-3/4 bg-blue-200/50 flex items-center justify-center">
+        <span class="text-xs text-blue-800 font-bold">培养液</span>
+       </div>
+       <div class="absolute inset-0 flex items-center justify-center text-2xl md:text-4xl">🧪</div>
+      </div>
+      <span class="font-bold text-slate-600 text-sm md:text-base">体外培养液</span>
+     </div>
+     <!-- 提取 -->
+     <div class="flex flex-col items-center z-10">
+      <button id="btn-extract-antibody" class="px-6 py-2 md:px-8 md:py-3 bg-gradient-to-r from-blue-500 to-cyan-500 text-white rounded-full shadow-lg hover:scale-105 transition font-bold text-base md:text-lg animate-pulse border-2 border-white/20">
+       提取抗体
+      </button>
+      <div class="w-20 h-28 md:w-24 md:h-32 border-4 border-gray-300 border-t-0 rounded-b-xl mt-4 bg-white relative overflow-hidden shadow-xl">
+         <div id="collection-bottle" class="absolute bottom-0 w-full h-0 bg-yellow-400 transition-all duration-[2000ms] border-t border-yellow-300"></div>
+         <div class="absolute inset-0 flex items-center justify-center pointer-events-none">
+            <span class="text-xs text-gray-400 font-bold">收集瓶</span>
+         </div>
+      </div>
+     </div>
+     <!-- 体内 -->
+     <div class="flex flex-col items-center gap-2 opacity-0" id="extract-vivo">
+      <div class="w-32 h-20 md:w-40 md:h-24 bg-gray-100 rounded-full relative border-2 border-gray-200 flex items-center justify-center shadow-md">
+       <span class="text-3xl md:text-4xl">🐁</span>
+      </div>
+      <span class="font-bold text-slate-600 text-sm md:text-base">小鼠腹水</span>
+     </div>
+    </div>
+    <div id="extract-result" class="text-lg md:text-2xl font-bold text-blue-600 opacity-0 transition-all transform translate-y-4 bg-blue-50 px-6 py-2 rounded-full border border-blue-200">
+     🎉 成功获得大量单克隆抗体！
+    </div>
+   </div>
+  </template>
+  <!-- Step 7: 应用与展望 -->
+  <template id="tpl-step8">
+   <div class="relative w-full h-full flex flex-col items-center justify-center p-6 overflow-y-auto">
+    <h2 class="text-2xl font-bold text-slate-800 mb-6 mt-4">单克隆抗体的应用</h2>
+    <div class="grid grid-cols-3 gap-6 w-full max-w-5xl">
+     <div class="bg-white p-5 rounded-2xl shadow-lg border border-blue-100 hover:-translate-y-2 transition duration-300 flex flex-col">
+      <div class="w-14 h-14 bg-blue-100 rounded-full flex items-center justify-center text-2xl mb-3 mx-auto">🔍</div>
+      <h3 class="text-lg font-bold text-blue-800 mb-2 text-center">诊断试剂</h3>
+      <p class="text-slate-600 text-xs leading-relaxed text-justify">准确识别各种抗原物质的细微差异，并跟特异性抗原发生结合反应。</p>
+     </div>
+     <div class="bg-white p-5 rounded-2xl shadow-lg border border-purple-100 hover:-translate-y-2 transition duration-300 flex flex-col">
+      <div class="w-14 h-14 bg-purple-100 rounded-full flex items-center justify-center text-2xl mb-3 mx-auto">💊</div>
+      <h3 class="text-lg font-bold text-purple-800 mb-2 text-center">治疗疾病</h3>
+      <p class="text-slate-600 text-xs leading-relaxed text-justify">主要用于治疗癌症，可作为抗体药物直接杀伤癌细胞，或阻断癌细胞生长信号。</p>
+     </div>
+     <div class="bg-white p-5 rounded-2xl shadow-lg border border-amber-100 hover:-translate-y-2 transition duration-300 flex flex-col">
+      <div class="w-14 h-14 bg-amber-100 rounded-full flex items-center justify-center text-2xl mb-3 mx-auto">🚀</div>
+      <h3 class="text-lg font-bold text-amber-800 mb-2 text-center">运载药物</h3>
+      <p class="text-slate-600 text-xs leading-relaxed text-justify">将抗癌药物或毒素与单克隆抗体结合，制成“生物导弹”，定向杀伤癌细胞。</p>
+     </div>
+    </div>
+    <div class="mt-8 mb-4">
+     <button id="btn-finish" class="px-6 py-2.5 bg-gradient-to-r from-blue-500 to-indigo-600 text-white rounded-full font-bold shadow-lg hover:scale-105 transition flex items-center gap-2 text-sm"><span>📚</span> 已阅读了解</button>
+    </div>
+   </div>
+  </template>
+  <script type="module">
+        const state = {
+            step: 0,
+            completed: [false, false, false, false, false, false, false, false],
+            fusionResults: [] 
+        };
+
+        const steps = [
+            {
+                title: "免疫小鼠",
+                instruction: "拖动注射器到小鼠身上，注射抗原",
+                theory: "将特定抗原注射入小鼠体内，刺激免疫系统。小鼠脾脏内的B淋巴细胞会增殖分化，产生针对该抗原的抗体。",
+                task: "成功注射抗原并观察免疫反应",
+                init: initStep1
+            },
+            {
+                title: "提取细胞材料",
+                instruction: "点击提取按钮，获取已免疫的B淋巴细胞和骨髓瘤细胞",
+                theory: "从免疫后的小鼠脾脏中提取已免疫的B淋巴细胞（多种类型，针对不同抗原表位），同时准备骨髓瘤细胞作为融合材料。",
+                task: "提取两种细胞并观察其特征",
+                init: initStep1_5
+            },
+            {
+                title: "细胞融合",
+                instruction: "点击选择一种诱导方式(PEG、灭活病毒或电融合法)进行融合",
+                theory: "动物细胞融合常用诱导剂：PEG（化学法）、灭活病毒（生物法）、电激（物理法）。融合是随机的，会产生多种组合。",
+                task: "选择一种诱导方式进行融合，观察效果",
+                init: initStep2
+            },
+            {
+                title: "HAT筛选 (第一次筛选)",
+                instruction: "选择合适的培养基倒入培养皿",
+                theory: "在HAT培养基中，未融合的细胞和同种融合细胞（B-B, 瘤-瘤）都会死亡。只有杂交瘤细胞（B-瘤）具备双亲特点，能存活并快速增殖。",
+                task: "筛选出杂交瘤细胞并观察其增殖",
+                init: initStep3
+            },
+            {
+                title: "克隆化培养 (第二次筛选)",
+                instruction: "1. 点击稀释接种 2. 点击抗体检测",
+                theory: "虽然筛选出了杂交瘤细胞，但由于B细胞来源不同，它们分泌的抗体也不同。需要通过有限稀释法（单克隆）和抗原-抗体检测，筛选出能分泌所需抗体的细胞株。",
+                task: "筛选出阳性杂交瘤细胞(A型)",
+                init: initStep4
+            },
+            {
+                title: "扩大培养",
+                instruction: "点击选择不同的培养方式，对比产量和特点",
+                theory: "筛选出的特定杂交瘤细胞可进行体外培养或体内培养。体内培养（腹水）浓度极高但纯度低；体外培养浓度较低但纯度高且易于工业化。",
+                task: "对比两种培养方式的科学数据",
+                init: initStep5
+            },
+            {
+                title: "抗体提取",
+                instruction: "点击提取按钮，收集单克隆抗体",
+                theory: "杂交瘤细胞在体外培养液或小鼠腹水中增殖并分泌大量单克隆抗体。从培养液或腹水中提取出的抗体纯度高、特异性强。",
+                task: "从培养体系中提取单克隆抗体",
+                init: initStepExtract
+            },
+            {
+                title: "应用与展望",
+                instruction: "了解单克隆抗体的实际应用",
+                theory: "单克隆抗体已被广泛应用于医学诊断、治疗和药物运载等领域，被称为'生物导弹'。",
+                task: "阅读了解单克隆抗体的实际应用",
+                init: initStep6
+            }
+        ];
+
+        const els = {
+            stage: document.getElementById('stage'),
+            instructionText: document.getElementById('instruction-text'),
+            theoryText: document.getElementById('theory-text'),
+            taskList: document.getElementById('task-list'),
+            nextBtn: document.getElementById('nextBtn'),
+            prevBtn: document.getElementById('prevBtn'),
+            resetBtn: document.getElementById('resetBtn'),
+            stepDots: document.getElementById('step-dots')
+        };
+
+        function init() {
+            renderStepDots();
+            loadStep(0);
+            els.nextBtn.addEventListener('click', () => { if (state.step < steps.length - 1) loadStep(state.step + 1); });
+            els.prevBtn.addEventListener('click', () => { if (state.step > 0) loadStep(state.step - 1); });
+            els.resetBtn.addEventListener('click', () => { 
+                if (state.step === steps.length - 1) {
+                    location.reload();
+                } else {
+                    state.completed[state.step] = false;
+                    loadStep(state.step); 
+                }
+            });
+        }
+
+        function renderStepDots() {
+            els.stepDots.innerHTML = steps.map((_, i) => `
+                <div class="w-2.5 h-2.5 rounded-full transition-all duration-300 ${i === 0 ? 'bg-blue-500 scale-125' : 'bg-gray-300'}" id="dot-${i}"></div>
+            `).join('');
+        }
+
+        function updateUI(index) {
+            steps.forEach((_, i) => {
+                const dot = document.getElementById(`dot-${i}`);
+                if (i === index) dot.className = 'w-2.5 h-2.5 rounded-full transition-all duration-300 bg-blue-500 scale-125 shadow-lg shadow-blue-500/50';
+                else if (i < index) dot.className = 'w-2.5 h-2.5 rounded-full transition-all duration-300 bg-blue-300';
+                else dot.className = 'w-2.5 h-2.5 rounded-full transition-all duration-300 bg-gray-300';
+            });
+            const data = steps[index];
+            els.instructionText.textContent = data.instruction;
+            els.theoryText.textContent = data.theory;
+            els.taskList.innerHTML = `<li>${data.task}</li>`;
+            els.prevBtn.disabled = index === 0;
+            els.prevBtn.style.opacity = index === 0 ? '0.5' : '1';
+            checkNextButton();
+        }
+
+        function checkNextButton() {
+            if (state.completed[state.step]) {
+                els.nextBtn.disabled = false;
+                els.nextBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+            } else {
+                els.nextBtn.disabled = true;
+                els.nextBtn.classList.add('opacity-50', 'cursor-not-allowed');
+            }
+        }
+
+        function markStepComplete() {
+            state.completed[state.step] = true;
+            checkNextButton();
+            const toast = document.createElement('div');
+            toast.className = 'absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-green-500 text-white px-6 py-3 rounded-full shadow-2xl font-bold text-xl z-50 animate-bounce';
+            toast.innerHTML = '✅ 任务完成';
+            els.stage.appendChild(toast);
+            anime({ targets: toast, opacity: [1, 0], translateY: -100, delay: 1000, duration: 1000, complete: () => toast.remove() });
+        }
+
+        function loadStep(index) {
+            state.completed[index] = false;
+            state.step = index;
+            updateUI(index);
+            const tpl = document.getElementById(`tpl-step${index + 1}`);
+            els.stage.innerHTML = '';
+            els.stage.appendChild(tpl.content.cloneNode(true));
+            if (index < steps.length - 1) {
+                els.nextBtn.style.display = 'flex';
+                els.resetBtn.textContent = '↺ 重置本步骤';
+            } else {
+                els.resetBtn.textContent = '↺ 重新开始';
+            }
+            setTimeout(() => steps[index].init(), 50);
+        }
+
+        // --- Step 1: 免疫小鼠 ---
+        function initStep1() {
+            const syringe = document.getElementById('syringe-tool');
+            const mouse = document.getElementById('mouse-target');
+            const liquid = document.getElementById('syringe-liquid');
+            const plunger = document.getElementById('syringe-plunger');
+            let isDragging = false, startX, startY;
+
+            function startDrag(e) {
+                e.preventDefault();
+                const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+                const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+                isDragging = true;
+                const rect = syringe.getBoundingClientRect();
+                startX = clientX - rect.left; startY = clientY - rect.top;
+                syringe.style.position = 'fixed'; syringe.style.zIndex = 100;
+                document.addEventListener('mousemove', onDrag);
+                document.addEventListener('mouseup', stopDrag);
+                document.addEventListener('touchmove', onDrag, {passive: false});
+                document.addEventListener('touchend', stopDrag);
+            }
+            
+            syringe.addEventListener('mousedown', startDrag);
+            syringe.addEventListener('touchstart', startDrag, {passive: false});
+
+            function onDrag(e) {
+                if (!isDragging) return;
+                e.preventDefault();
+                const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+                const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+                syringe.style.left = (clientX - startX) + 'px'; syringe.style.top = (clientY - startY) + 'px';
+                if (isOverlap(mouse.getBoundingClientRect(), syringe.getBoundingClientRect())) mouse.classList.add('scale-105', 'brightness-110');
+                else mouse.classList.remove('scale-105', 'brightness-110');
+            }
+
+            function stopDrag(e) {
+                isDragging = false;
+                document.removeEventListener('mousemove', onDrag); 
+                document.removeEventListener('mouseup', stopDrag);
+                document.removeEventListener('touchmove', onDrag);
+                document.removeEventListener('touchend', stopDrag);
+                if (isOverlap(mouse.getBoundingClientRect(), syringe.getBoundingClientRect())) performInjection();
+                else { syringe.style.position = 'relative'; syringe.style.left = 'auto'; syringe.style.top = 'auto'; }
+            }
+
+            function performInjection() {
+                syringe.style.pointerEvents = 'none';
+                anime({
+                    targets: syringe, rotate: -45, duration: 300, easing: 'easeOutQuad',
+                    complete: () => {
+                        anime({ targets: plunger, translateY: 20, duration: 500 });
+                        anime({
+                            targets: liquid, height: 0, duration: 500,
+                            complete: () => {
+                                anime({ targets: syringe, opacity: 0, translateY: -50, duration: 500 });
+                                showImmuneResponse();
+                            }
+                        });
+                    }
+                });
+            }
+
+            function showImmuneResponse() {
+                const container = document.getElementById('immune-particles');
+                for(let i=0; i<8; i++) {
+                    const p = document.createElement('div');
+                    p.className = 'absolute w-4 h-4 bg-blue-400 rounded-full shadow-lg';
+                    p.style.left = '50%'; p.style.top = '50%';
+                    container.appendChild(p);
+                    anime({
+                        targets: p, left: () => 50 + anime.random(-30, 30) + '%', top: () => 50 + anime.random(-20, 20) + '%',
+                        scale: [0, 1.5], opacity: [1, 0], duration: 1500, delay: i * 100, easing: 'easeOutExpo'
+                    });
+                }
+                setTimeout(markStepComplete, 1500);
+            }
+        }
+
+        // --- Step 1.5: 提取细胞材料 ---
+        function initStep1_5() {
+            const btnExtractB = document.getElementById('btn-extract-b');
+            const btnExtractTumor = document.getElementById('btn-extract-tumor');
+            const bCellDisplay = document.getElementById('b-cell-display');
+            const tumorCellDisplay = document.getElementById('tumor-cell-display');
+            let bExtracted = false, tumorExtracted = false;
+
+            btnExtractB.addEventListener('click', () => {
+                btnExtractB.disabled = true;
+                btnExtractB.classList.add('opacity-50');
+                anime({ targets: bCellDisplay, opacity: 1, duration: 300 });
+                const bTypes = ['类型A', '类型B', '类型C', '类型D'];
+                const bCellsContainer = document.getElementById('b-cells');
+                bTypes.forEach((label, i) => {
+                    setTimeout(() => {
+                        const cell = document.createElement('div');
+                        cell.className = 'w-16 h-16 rounded-full shadow-lg relative b-cell';
+                        cell.style.transform = 'scale(0)';
+                        const labelEl = document.createElement('div');
+                        labelEl.className = 'absolute inset-0 flex items-center justify-center text-xs font-bold text-white drop-shadow-[0_2px_2px_rgba(0,0,0,0.8)] rounded-full';
+                        labelEl.textContent = label;
+                        cell.appendChild(labelEl);
+                        bCellsContainer.appendChild(cell);
+                        anime({ targets: cell, scale: 1, duration: 500, easing: 'easeOutElastic(1, .8)' });
+                    }, i * 200);
+                });
+                bExtracted = true;
+                checkComplete();
+            });
+
+            btnExtractTumor.addEventListener('click', () => {
+                btnExtractTumor.disabled = true;
+                btnExtractTumor.classList.add('opacity-50');
+                anime({ targets: tumorCellDisplay, opacity: 1, duration: 300 });
+                const tumorCellsContainer = document.getElementById('tumor-cells');
+                for(let i=0; i<4; i++) {
+                    setTimeout(() => {
+                        const cell = document.createElement('div');
+                        cell.className = 'w-14 h-14 rounded-full border-2 border-purple-400 shadow-lg tumor-cell';
+                        cell.style.transform = 'scale(0)';
+                        tumorCellsContainer.appendChild(cell);
+                        anime({ targets: cell, scale: 1, duration: 500, easing: 'easeOutElastic(1, .8)' });
+                    }, i * 200);
+                }
+                tumorExtracted = true;
+                checkComplete();
+            });
+
+            function checkComplete() {
+                if (bExtracted && tumorExtracted) setTimeout(markStepComplete, 1000);
+            }
+        }
+
+        // --- Step 2: 细胞融合 ---
+        function initStep2() {
+            const container = document.getElementById('cell-container');
+            const dishBoundary = document.getElementById('dish-boundary');
+            const tools = document.querySelectorAll('.draggable-tool');
+            const counts = { single: 12, bb: 0, tt: 0, hybrid: 0 };
+            state.fusionResults = [];
+
+            const dishRect = dishBoundary.getBoundingClientRect();
+            const containerRect = container.getBoundingClientRect();
+            const cellMaxSize = 80;
+            const padding = cellMaxSize / 2 + 20;
+            const minX = (dishRect.left - containerRect.left) + padding;
+            const maxX = (dishRect.right - containerRect.left) - padding;
+            const minY = (dishRect.top - containerRect.top) + padding;
+            const maxY = (dishRect.bottom - containerRect.top) - padding;
+
+            const cells = [];
+            const initPositions = [
+                {x: 0.3, y: 0.25}, {x: 0.7, y: 0.25}, {x: 0.3, y: 0.4}, {x: 0.7, y: 0.4}, {x: 0.25, y: 0.55}, {x: 0.75, y: 0.55},
+                {x: 0.35, y: 0.7}, {x: 0.65, y: 0.7}, {x: 0.35, y: 0.82}, {x: 0.65, y: 0.82}, {x: 0.45, y: 0.92}, {x: 0.55, y: 0.92}
+            ];
+            
+            for(let i=0; i<6; i++) {
+                cells.push(createCell('b-cell', initPositions[i]));
+                cells.push(createCell('tumor-cell', initPositions[6 + i]));
+            }
+
+            function createCell(type, pos) {
+                const cell = document.createElement('div');
+                cell.className = `cell ${type}`;
+                const x = Math.max(minX, Math.min(maxX, minX + (maxX - minX) * pos.x));
+                const y = Math.max(minY, Math.min(maxY, minY + (maxY - minY) * pos.y));
+                cell.style.left = x + 'px';
+                cell.style.top = y + 'px';
+                cell.dataset.type = type;
+                container.appendChild(cell);
+                anime({
+                    targets: cell, translateX: () => anime.random(-10, 10), translateY: () => anime.random(-10, 10),
+                    duration: 2000, loop: true, direction: 'alternate', easing: 'easeInOutSine'
+                });
+                return cell;
+            }
+
+            let activeTool = null, startOffset = { x: 0, y: 0 }, touchStartPos = { x: 0, y: 0 }, isDragGesture = false;
+
+            tools.forEach(tool => {
+                tool.addEventListener('mousedown', (e) => {
+                    if(state.completed[2]) return;
+                    activeTool = tool;
+                    const rect = tool.getBoundingClientRect();
+                    startOffset = { x: e.clientX - rect.left, y: e.clientY - rect.top };
+                    isDragGesture = false;
+                    touchStartPos = { x: e.clientX, y: e.clientY };
+                    document.addEventListener('mousemove', onMouseMove);
+                    document.addEventListener('mouseup', onMouseUp);
+                });
+
+                tool.addEventListener('touchstart', (e) => {
+                    if(state.completed[2]) return;
+                    e.preventDefault();
+                    const touch = e.touches[0];
+                    activeTool = tool;
+                    const rect = tool.getBoundingClientRect();
+                    startOffset = { x: touch.clientX - rect.left, y: touch.clientY - rect.top };
+                    touchStartPos = { x: touch.clientX, y: touch.clientY };
+                    isDragGesture = false;
+                }, {passive: false});
+
+                tool.addEventListener('touchmove', (e) => {
+                    if(!activeTool) return;
+                    e.preventDefault();
+                    const touch = e.touches[0];
+                    if (!isDragGesture && (Math.abs(touch.clientX - touchStartPos.x) > 5 || Math.abs(touch.clientY - touchStartPos.y) > 5)) {
+                        isDragGesture = true;
+                        activeTool.style.position = 'fixed'; activeTool.style.zIndex = 100;
+                    }
+                    if (isDragGesture) {
+                        activeTool.style.left = (touch.clientX - startOffset.x) + 'px';
+                        activeTool.style.top = (touch.clientY - startOffset.y) + 'px';
+                    }
+                }, {passive: false});
+
+                tool.addEventListener('touchend', (e) => {
+                    if(!activeTool) return;
+                    if (!isDragGesture) performBatchFusion(activeTool.dataset.type);
+                    else {
+                        const toolRect = activeTool.getBoundingClientRect();
+                        if (isOverlap(toolRect, dishRect)) performBatchFusion(activeTool.dataset.type);
+                        else resetTool(activeTool);
+                    }
+                    activeTool = null;
+                });
+            });
+
+            function onMouseMove(e) {
+                if(activeTool) {
+                    e.preventDefault();
+                    if (!isDragGesture && (Math.abs(e.clientX - touchStartPos.x) > 5 || Math.abs(e.clientY - touchStartPos.y) > 5)) {
+                        isDragGesture = true;
+                        activeTool.style.position = 'fixed'; activeTool.style.zIndex = 100;
+                    }
+                    if (isDragGesture) {
+                        activeTool.style.left = (e.clientX - startOffset.x) + 'px';
+                        activeTool.style.top = (e.clientY - startOffset.y) + 'px';
+                    }
+                }
+            }
+
+            function onMouseUp(e) {
+                document.removeEventListener('mousemove', onMouseMove);
+                document.removeEventListener('mouseup', onMouseUp);
+                if(!activeTool) return;
+                if (!isDragGesture) performBatchFusion(activeTool.dataset.type);
+                else {
+                    const toolRect = activeTool.getBoundingClientRect();
+                    if (isOverlap(toolRect, dishRect)) performBatchFusion(activeTool.dataset.type);
+                    else resetTool(activeTool);
+                }
+                activeTool = null;
+            }
+
+            function resetTool(tool) {
+                tool.style.position = 'relative'; tool.style.left = 'auto'; tool.style.top = 'auto'; tool.style.zIndex = '';
+            }
+
+            function performBatchFusion(agentType) {
+                const toolsPanel = document.getElementById('fusion-tools');
+                if(toolsPanel) toolsPanel.style.display = 'none';
+                
+                if (agentType === 'electric') {
+                    const flash = document.createElement('div');
+                    flash.className = 'absolute inset-0 bg-yellow-100 z-40 pointer-events-none';
+                    flash.style.opacity = 0;
+                    document.getElementById('game-area').appendChild(flash);
+                    anime({ targets: flash, opacity: [0, 0.8, 0, 0.6, 0], duration: 400, easing: 'steps(5)', complete: () => flash.remove() });
+                    cells.forEach(cell => anime({ targets: cell, translateX: [0, 5, -5, 0], duration: 100, loop: 3 }));
+                } else {
+                    const color = agentType === 'peg' ? 'bg-purple-400' : 'bg-red-400';
+                    for(let i=0; i<5; i++) {
+                        const drop = document.createElement('div');
+                        drop.className = `liquid-drop ${color}`;
+                        drop.style.left = (dishRect.left + dishRect.width/2 - 20 + anime.random(-50, 50)) + 'px';
+                        drop.style.top = (dishRect.top + 50) + 'px';
+                        drop.style.position = 'fixed'; 
+                        document.body.appendChild(drop); 
+                        anime({ targets: drop, top: dishRect.top + dishRect.height/2 + anime.random(-50, 50), opacity: [1, 0], duration: 800, easing: 'easeInQuad', delay: i*100, complete: () => drop.remove() });
+                    }
+                }
+
+                cells.forEach(cell => {
+                    anime.remove(cell);
+                    const tx = minX + Math.random() * (maxX - minX);
+                    const ty = minY + Math.random() * (maxY - minY);
+                    anime({ targets: cell, left: tx, top: ty, duration: 1000, easing: 'easeInOutQuad' });
+                });
+
+                setTimeout(() => {
+                    const bCells = cells.filter(c => c.dataset.type === 'b-cell');
+                    const tCells = cells.filter(c => c.dataset.type === 'tumor-cell');
+                    const gridPositions = [
+                        {x: 0.2, y: 0.18}, {x: 0.8, y: 0.18}, {x: 0.5, y: 0.3}, {x: 0.2, y: 0.5},
+                        {x: 0.8, y: 0.5}, {x: 0.35, y: 0.68}, {x: 0.65, y: 0.68}, {x: 0.5, y: 0.85}
+                    ];
+                    
+                    function getSafePos(idx) {
+                        const p = gridPositions[idx % gridPositions.length];
+                        const safeMargin = 50;
+                        const x = Math.max(minX + safeMargin, Math.min(maxX - safeMargin, minX + (maxX - minX) * p.x));
+                        const y = Math.max(minY + safeMargin, Math.min(maxY - safeMargin, minY + (maxY - minY) * p.y));
+                        return { x, y };
+                    }
+
+                    fuseCells(bCells.pop(), tCells.pop(), 'hybrid', getSafePos(0));
+                    fuseCells(bCells.pop(), bCells.pop(), 'bb', getSafePos(1));
+                    fuseCells(tCells.pop(), tCells.pop(), 'tt', getSafePos(2));
+                    fuseCells(bCells.pop(), tCells.pop(), 'hybrid', getSafePos(3));
+                    
+                    const singles = [...bCells, ...tCells];
+                    singles.forEach((c, i) => {
+                        const pos = getSafePos(4 + i);
+                        anime({ targets: c, left: pos.x, top: pos.y, duration: 800, easing: 'easeOutQuad' });
+                    });
+
+                    counts.single = 4;
+                    updateCounts();
+                    setTimeout(markStepComplete, 1500);
+                }, 1000);
+            }
+
+            function fuseCells(c1, c2, resultType, targetPos) {
+                let cx = Math.max(minX, Math.min(maxX, targetPos.x));
+                let cy = Math.max(minY, Math.min(maxY, targetPos.y));
+                anime({ targets: c1, left: cx, top: cy, duration: 500, easing: 'easeOutQuad' });
+                anime({ targets: c2, left: cx, top: cy, duration: 500, easing: 'easeOutQuad', complete: () => {
+                    c1.remove(); c2.remove();
+                    const fused = document.createElement('div');
+                    let cls = '';
+                    if(resultType === 'bb') cls = 'fused-bb';
+                    else if(resultType === 'tt') cls = 'fused-tt';
+                    else cls = 'hybrid-cell';
+                    fused.className = `cell ${cls}`;
+                    fused.style.left = cx + 'px'; fused.style.top = cy + 'px';
+                    fused.style.transform = 'scale(0)';
+                    container.appendChild(fused);
+                    anime({ targets: fused, scale: 1, duration: 500 });
+                    counts[resultType]++;
+                    state.fusionResults.push(resultType);
+                    updateCounts();
+                }});
+            }
+
+            function updateCounts() {
+                document.getElementById('count-single').textContent = counts.single;
+                document.getElementById('count-bb').textContent = counts.bb;
+                document.getElementById('count-tt').textContent = counts.tt;
+                document.getElementById('count-hybrid').textContent = counts.hybrid;
+            }
+        }
+
+        // --- Step 3: HAT筛选 ---
+        function initStep3() {
+            const dish = document.getElementById('petri-dish-3');
+            const bottles = document.querySelectorAll('.reagent-bottle');
+            const results = state.fusionResults.length > 0 ? state.fusionResults : ['bb', 'tt', 'hybrid', 'hybrid'];
+            const allTypes = [...results, 'b-cell', 'b-cell', 'tumor-cell', 'tumor-cell'];
+            const cells = [];
+            const hybridPositions = [{ left: 150, top: 150 }, { left: 300, top: 250 }];
+            let hybridIndex = 0;
+            
+            allTypes.forEach(type => {
+                const cell = document.createElement('div');
+                let className = 'cell ';
+                if (type === 'bb') className += 'fused-bb';
+                else if (type === 'tt') className += 'fused-tt';
+                else if (type === 'hybrid') className += 'hybrid-cell';
+                else className += type;
+                
+                if (type === 'hybrid') {
+                    cell.dataset.subtype = Math.random() > 0.5 ? 'A' : 'B';
+                    const pos = hybridPositions[hybridIndex];
+                    cell.style.left = pos.left + 'px'; cell.style.top = pos.top + 'px';
+                    hybridIndex++;
+                } else {
+                    cell.style.left = (80 + Math.random() * 280) + 'px'; 
+                    cell.style.top = (80 + Math.random() * 280) + 'px';
+                }
+                cell.className = className;
+                cell.style.transform = 'scale(0.6)';
+                dish.appendChild(cell);
+                cells.push({el: cell, type: type});
+            });
+
+            bottles.forEach(btn => {
+                btn.addEventListener('click', () => {
+                    const type = btn.dataset.type;
+                    dish.style.backgroundColor = type === 'hat' ? '#ecfdf5' : '#eff6ff';
+                    if (type === 'normal') showToast("❌ 普通培养基无法筛选，所有细胞都存活了！", 'error');
+                    else {
+                        showToast("✅ HAT培养基加入成功！正在筛选...");
+                        cells.forEach(item => {
+                            if (item.type === 'hybrid') {
+                                anime({ targets: item.el, scale: 1.2, boxShadow: '0 0 15px #10b981', duration: 1000 });
+                                setTimeout(() => {
+                                    const dishCenterX = parseFloat(item.el.style.left);
+                                    const dishCenterY = parseFloat(item.el.style.top);
+                                    for(let i=0; i<2; i++) {
+                                        const clone = document.createElement('div');
+                                        clone.className = 'cell hybrid-cell';
+                                        clone.dataset.subtype = item.el.dataset.subtype;
+                                        const offsetX = (i === 0 ? -30 : 30);
+                                        const offsetY = anime.random(-20, 20);
+                                        clone.style.left = (dishCenterX + offsetX) + 'px';
+                                        clone.style.top = (dishCenterY + offsetY) + 'px';
+                                        clone.style.transform = 'scale(0)';
+                                        dish.appendChild(clone);
+                                        anime({ targets: clone, scale: 0.85, duration: 600, delay: i * 100, easing: 'easeOutElastic(1, .8)' });
+                                        setTimeout(() => {
+                                            for(let j=0; j<2; j++) {
+                                                const clone2 = document.createElement('div');
+                                                clone2.className = 'cell hybrid-cell';
+                                                clone2.dataset.subtype = item.el.dataset.subtype;
+                                                const offsetX2 = (j === 0 ? -25 : 25);
+                                                const offsetY2 = anime.random(-15, 15);
+                                                clone2.style.left = (parseFloat(clone.style.left) + offsetX2) + 'px';
+                                                clone2.style.top = (parseFloat(clone.style.top) + offsetY2) + 'px';
+                                                clone2.style.transform = 'scale(0)';
+                                                dish.appendChild(clone2);
+                                                anime({ targets: clone2, scale: 0.75, duration: 600, delay: j * 100, easing: 'easeOutElastic(1, .8)' });
+                                            }
+                                        }, 800);
+                                    }
+                                }, 1500);
+                            } else {
+                                anime({ targets: item.el, opacity: 0, scale: 0, duration: 1500, delay: Math.random() * 500 });
+                            }
+                        });
+                        setTimeout(markStepComplete, 4000);
+                    }
+                });
+            });
+        }
+
+        // --- Step 4: 克隆化培养 ---
+        function initStep4() {
+            const plate = document.getElementById('elisa-plate');
+            const btnDilute = document.getElementById('btn-dilute');
+            const btnDetect = document.getElementById('btn-detect');
+            const wells = [];
+            for(let i=0; i<96; i++) {
+                const well = document.createElement('div');
+                well.className = 'well w-6 h-6 bg-slate-700 rounded-full border border-slate-600 flex items-center justify-center overflow-visible relative';
+                plate.appendChild(well);
+                wells.push(well);
+            }
+
+            btnDilute.addEventListener('click', () => {
+                btnDilute.disabled = true;
+                btnDilute.classList.add('opacity-50');
+                let hasTypeA = false;
+                wells.forEach((well, i) => {
+                    if (Math.random() < 0.4 || (i === 42 && !hasTypeA)) { 
+                        const cell = document.createElement('div');
+                        const types = ['A', 'B', 'C', 'D'];
+                        let type;
+                        if (!hasTypeA && i > 85) { type = 'A'; hasTypeA = true; }
+                        else if (i === 42) { type = 'A'; hasTypeA = true; }
+                        else { type = Math.random() < 0.1 ? 'A' : types[Math.floor(Math.random() * 3) + 1]; if (type === 'A') hasTypeA = true; }
+                        
+                        // 细胞样式
+                        cell.className = `w-3 h-3 rounded-full bg-slate-400 hybrid-type-${type.toLowerCase()} relative`;
+                        cell.dataset.type = type;
+                        cell.style.transform = 'scale(0)';
+                        
+                        // 添加标签
+                        const label = document.createElement('div');
+                        label.className = 'cell-label';
+                        label.textContent = type;
+                        cell.appendChild(label);
+
+                        well.appendChild(cell);
+                        anime({
+                            targets: cell, scale: 1, delay: i * 30, duration: 500
+                        });
+                    }
+                });
+                setTimeout(() => {
+                    btnDetect.disabled = false;
+                    btnDetect.classList.remove('opacity-50', 'cursor-not-allowed');
+                    btnDetect.classList.add('animate-pulse');
+                }, 2000);
+            });
+
+            btnDetect.addEventListener('click', () => {
+                btnDetect.disabled = true;
+                btnDetect.classList.add('opacity-50');
+                wells.forEach((well, index) => {
+                    const cell = well.querySelector('div.hybrid-type-a, div.hybrid-type-b, div.hybrid-type-c, div.hybrid-type-d');
+                    if(cell) {
+                        setTimeout(() => {
+                            const drop = document.createElement('div');
+                            drop.className = 'absolute w-3 h-3 bg-amber-500 rounded-full z-50 shadow-sm';
+                            const rect = well.getBoundingClientRect();
+                            const stageRect = els.stage.getBoundingClientRect();
+                            drop.style.left = (rect.left - stageRect.left + rect.width/2 - 6) + 'px';
+                            drop.style.top = (rect.top - stageRect.top - 20) + 'px';
+                            els.stage.appendChild(drop);
+                            anime({
+                                targets: drop, translateY: [0, 20], opacity: [1, 0], scale: [1, 0.5], duration: 400, easing: 'easeInQuad',
+                                complete: () => {
+                                    drop.remove();
+                                    const reaction = document.createElement('div');
+                                    reaction.className = 'absolute inset-0 opacity-0 rounded-full transition-all duration-500';
+                                    well.appendChild(reaction);
+                                    if (cell.dataset.type === 'A') {
+                                        reaction.className += ' bg-amber-400';
+                                        anime({ targets: reaction, opacity: 0.8, duration: 500 });
+                                        well.style.borderColor = '#f59e0b';
+                                        anime({ targets: cell, scale: 1.4, backgroundColor: '#f59e0b', duration: 500, direction: 'alternate', loop: 2 });
+                                    } else {
+                                        reaction.className += ' bg-slate-600';
+                                        anime({ targets: reaction, opacity: 0.3, duration: 500 });
+                                        anime({ targets: cell, opacity: 0.5, duration: 500 });
+                                    }
+                                }
+                            });
+                        }, index * 20);
+                    }
+                });
+                setTimeout(() => { showToast("✅ 筛选完成！A型细胞为阳性克隆株"); markStepComplete(); }, wells.length * 20 + 1000);
+            });
+        }
+
+        // --- Step 5: 扩大培养 ---
+        function initStep5() {
+            const btns = document.querySelectorAll('.production-btn');
+            const placeholder = document.getElementById('chart-placeholder');
+            let chartInstance = null;
+
+            btns.forEach(btn => {
+                btn.addEventListener('click', () => {
+                    btns.forEach(b => b.classList.remove('ring-2', 'ring-blue-500', 'bg-blue-50'));
+                    btn.classList.add('ring-2', 'ring-blue-500', 'bg-blue-50');
+                    placeholder.style.display = 'none';
+                    renderChart(btn.dataset.mode);
+                    markStepComplete();
+                });
+            });
+
+            function renderChart(mode) {
+                const ctx = document.getElementById('productionChart').getContext('2d');
+                if (chartInstance) chartInstance.destroy();
+                const isVitro = mode === 'vitro';
+                const color = isVitro ? '#3b82f6' : '#f97316';
+                const dataPoints = isVitro ? [0, 0.005, 0.01, 0.02, 0.03, 0.04, 0.05] : [0, 0.5, 2.0, 4.5, 6.0, 8.0, 9.5];
+                chartInstance = new Chart(ctx, {
+                    type: 'line',
+                    data: {
+                        labels: ['Day 1', 'Day 3', 'Day 5', 'Day 7', 'Day 10', 'Day 14', 'Day 21'],
+                        datasets: [{ label: isVitro ? '体外培养产量 (mg/mL)' : '体内培养产量 (mg/mL)', data: dataPoints, borderColor: color, backgroundColor: color + '33', fill: true, tension: 0.4 }]
+                    },
+                    options: { 
+                        responsive: true, maintainAspectRatio: false, animation: { duration: 2000 },
+                        plugins: { legend: { display: true, position: 'top' } },
+                        scales: { y: { title: { display: true, text: '抗体浓度 (mg/mL)' }, type: 'linear', max: isVitro ? 0.1 : 10 } }
+                    }
+                });
+            }
+        }
+
+        // --- Step 6: 抗体提取 ---
+        function initStepExtract() {
+            const btn = document.getElementById('btn-extract-antibody');
+            const bottle = document.getElementById('collection-bottle');
+            const result = document.getElementById('extract-result');
+            const vitro = document.getElementById('extract-vitro');
+            const vivo = document.getElementById('extract-vivo');
+
+            // 入场动画
+            anime({
+                targets: [vitro, vivo],
+                opacity: [0, 1],
+                translateY: [20, 0],
+                delay: anime.stagger(200),
+                easing: 'easeOutQuad'
+            });
+
+            btn.onclick = () => {
+                btn.disabled = true;
+                btn.classList.remove('animate-pulse');
+                btn.textContent = '提取中...';
+                
+                // 液体上升
+                setTimeout(() => {
+                    bottle.style.height = '80%';
+                }, 500);
+
+                setTimeout(() => {
+                    result.classList.remove('opacity-0', 'translate-y-4');
+                    btn.textContent = '提取完成';
+                    btn.classList.add('bg-green-500', 'border-green-600');
+                    btn.classList.remove('from-blue-500', 'to-cyan-500');
+                    markStepComplete();
+                }, 2500);
+            };
+        }
+
+        // --- Step 7: 应用与展望 ---
+        function initStep6() {
+            state.completed[state.step] = true;
+            els.nextBtn.style.display = 'none';
+            
+            const btn = document.getElementById('btn-finish');
+            if(btn) {
+                btn.onclick = () => {
+                    alert("恭喜!您已掌握单克隆抗体制备的完整流程和克隆抗体的应用!");
+                };
+            }
+        }
+
+        function isOverlap(rect1, rect2) {
+            return !(rect1.right < rect2.left || rect1.left > rect2.right || rect1.bottom < rect2.top || rect1.top > rect2.bottom);
+        }
+
+        function showToast(msg, type='info') {
+            const toast = document.createElement('div');
+            toast.className = `absolute top-20 left-1/2 -translate-x-1/2 px-4 py-2 rounded-lg shadow-lg text-white font-bold z-50 ${type==='error'?'bg-red-500':'bg-slate-700'}`;
+            toast.textContent = msg;
+            els.stage.appendChild(toast);
+            setTimeout(() => toast.remove(), 3000);
+        }
+
+        init();
+    </script>
+ 
+
+
+<div id="imt-webext"></div></body></html>

@@ -1,0 +1,460 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>单克隆抗体制备流程图 - 高中生物互动课堂</title>
+    <!-- 引入Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- 引入Font Awesome图标 -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- 引入html2canvas（用于保存图片） -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <!-- 自定义Tailwind配置 -->
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#9370DB', // 淡紫主色
+                        secondary: '#F5F5DC', // 问题卡片黄色
+                        canvas: '#F8F5FF', // 画布浅紫
+                        btnSave: '#2E8B57',
+                        btnReset: '#DC143C',
+                        btnArrow: '#4169E1'
+                    },
+                    fontFamily: {
+                        sans: ['Microsoft YaHei', 'Arial', 'sans-serif'],
+                    },
+                }
+            }
+        }
+    </script>
+    <style type="text/tailwindcss">
+        @layer utilities {
+            /* 渐变背景 */
+            .bg-purple-gradient {
+                background: linear-gradient(135deg, #E6E6FA 0%, #D8BFD8 100%);
+            }
+            /* 卡片阴影和过渡 */
+            .card-shadow {
+                box-shadow: 0 2px 8px rgba(147, 112, 219, 0.3);
+                transition: all 0.2s ease;
+            }
+            .card-shadow:hover {
+                box-shadow: 0 4px 12px rgba(147, 112, 219, 0.5);
+                transform: translateY(-2px);
+            }
+            /* 画布样式 */
+            .flow-canvas {
+                position: relative;
+                min-height: 700px;
+                border: 2px dashed #9370DB;
+                border-radius: 8px;
+                background-color: rgba(255, 255, 255, 0.6);
+            }
+            /* 箭头样式 */
+            .arrow-line {
+                position: absolute;
+                height: 2px;
+                background-color: #333;
+                transform-origin: left center;
+                z-index: 10;
+            }
+            .arrow-head {
+                position: absolute;
+                width: 0;
+                height: 0;
+                border-top: 6px solid transparent;
+                border-bottom: 6px solid transparent;
+                border-left: 10px solid #333;
+                z-index: 10;
+            }
+            /* 拖放样式 */
+            .draggable {
+                cursor: move;
+            }
+            .dragover {
+                background-color: rgba(147, 112, 219, 0.1);
+            }
+        }
+    </style>
+</head>
+<body class="bg-purple-gradient min-h-screen p-4 md:p-8">
+    <div class="container mx-auto max-w-7xl">
+        <!-- 标题区域 -->
+        <header class="text-center mb-6 md:mb-8">
+            <h1 class="text-[clamp(1.8rem,4vw,2.5rem)] font-bold text-gray-800 mb-2">单克隆抗体制备流程图</h1>
+            <p class="text-gray-700 text-lg">高中生物选择性必修2 · 动物细胞工程 | 拖动卡片完善流程，点击卡片间绘制箭头</p>
+            <div class="w-3/4 h-1 bg-primary mx-auto mt-4 rounded-full"></div>
+        </header>
+
+        <!-- 操作按钮区域 -->
+        <div class="flex flex-wrap justify-center gap-4 mb-6">
+            <button id="drawArrow" class="btn-arrow px-6 py-2 rounded-lg font-medium flex items-center gap-2 bg-btnArrow text-white hover:bg-opacity-90 active:scale-95">
+                <i class="fas fa-long-arrow-alt-right"></i> 绘制箭头
+            </button>
+            <button id="saveCanvas" class="btn-save px-6 py-2 rounded-lg font-medium flex items-center gap-2 bg-btnSave text-white hover:bg-opacity-90 active:scale-95">
+                <i class="fas fa-save"></i> 保存结果
+            </button>
+            <button id="resetCanvas" class="btn-reset px-6 py-2 rounded-lg font-medium flex items-center gap-2 bg-btnReset text-white hover:bg-opacity-90 active:scale-95">
+                <i class="fas fa-redo"></i> 重置画布
+            </button>
+            <p id="tipText" class="text-gray-700 mt-2 text-sm">提示：问题卡片为浅黄色，普通流程卡片为白色</p>
+        </div>
+
+        <!-- 主内容区域：左侧卡片库 + 右侧画布 -->
+        <div class="flex flex-col lg:flex-row gap-6">
+            <!-- 左侧卡片库 -->
+            <div class="lg:w-1/4 bg-white rounded-lg p-4 shadow-lg">
+                <h2 class="text-xl font-bold text-primary mb-4 flex items-center gap-2">
+                    <i class="fas fa-cards-blank"></i> 流程卡片库
+                </h2>
+                <div id="cardLibrary" class="flex flex-col gap-3">
+                    <!-- 普通流程卡片 -->
+                    <div class="draggable card-shadow p-3 rounded-lg bg-white" draggable="true" data-id="1">小鼠</div>
+                    <div class="draggable card-shadow p-3 rounded-lg bg-white" draggable="true" data-id="2">注射抗原</div>
+                    <div class="draggable card-shadow p-3 rounded-lg bg-white" draggable="true" data-id="3">培养骨髓瘤细胞</div>
+                    <div class="draggable card-shadow p-3 rounded-lg bg-white" draggable="true" data-id="4">多种B淋巴细胞</div>
+                    <div class="draggable card-shadow p-3 rounded-lg bg-white" draggable="true" data-id="5">诱导融合</div>
+                    <div class="draggable card-shadow p-3 rounded-lg bg-white" draggable="true" data-id="6">多种杂交细胞</div>
+                    <div class="draggable card-shadow p-3 rounded-lg bg-white" draggable="true" data-id="7">第一次筛选</div>
+                    <div class="draggable card-shadow p-3 rounded-lg bg-white" draggable="true" data-id="8">获得杂交瘤细胞</div>
+                    <div class="draggable card-shadow p-3 rounded-lg bg-white" draggable="true" data-id="9">第二次筛选</div>
+                    <div class="draggable card-shadow p-3 rounded-lg bg-white" draggable="true" data-id="10">获得足够数量的能分泌所需抗体的细胞</div>
+                    <div class="draggable card-shadow p-3 rounded-lg bg-white" draggable="true" data-id="11">体内培养（将筛选出的细胞注射到小鼠腹腔内）</div>
+                    <div class="draggable card-shadow p-3 rounded-lg bg-white" draggable="true" data-id="12">体外培养（将筛选出的细胞置于动物细胞培养液中培养）</div>
+                    <div class="draggable card-shadow p-3 rounded-lg bg-white" draggable="true" data-id="13">从小鼠腹腔中分离、提取</div>
+                    <div class="draggable card-shadow p-3 rounded-lg bg-white" draggable="true" data-id="14">从培养液中分离、提取</div>
+                    <div class="draggable card-shadow p-3 rounded-lg bg-white" draggable="true" data-id="15">获得单克隆抗体</div>
+                    
+                    <!-- 问题卡片（浅黄色） -->
+                    <div class="draggable card-shadow p-3 rounded-lg bg-secondary" draggable="true" data-id="q1">本实验中注射物质为？</div>
+                    <div class="draggable card-shadow p-3 rounded-lg bg-secondary" draggable="true" data-id="q2">动物细胞融合的方法有哪些？与植物体细胞杂交有何异同？灭活病毒诱导法的原理是？</div>
+                    <div class="draggable card-shadow p-3 rounded-lg bg-secondary" draggable="true" data-id="q3">预测可能出现的细胞种类？（不考虑2个以上的细胞融合）</div>
+                    <div class="draggable card-shadow p-3 rounded-lg bg-secondary" draggable="true" data-id="q4">方法：HAT培养基筛选 本操作的目的是？</div>
+                    <div class="draggable card-shadow p-3 rounded-lg bg-secondary" draggable="true" data-id="q5">HAT培养基为什么可以筛选出目的细胞？</div>
+                    <div class="draggable card-shadow p-3 rounded-lg bg-secondary" draggable="true" data-id="q6">方法：克隆化培养、抗体检测 本操作的目的是？</div>
+                </div>
+            </div>
+
+            <!-- 右侧流程图画布 -->
+            <div class="lg:w-3/4">
+                <h2 class="text-xl font-bold text-primary mb-4 flex items-center gap-2">
+                    <i class="fas fa-project-diagram"></i> 流程图画布
+                </h2>
+                <div id="flowCanvas" class="flow-canvas w-full p-4"></div>
+            </div>
+        </div>
+
+        <!-- 底部说明 -->
+        <footer class="mt-8 text-center text-gray-600 text-sm">
+            <p>© 2025 高中生物互动课堂 | 单克隆抗体制备 - 动物细胞工程知识点</p>
+        </footer>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // 全局变量
+            const cardLibrary = document.getElementById('cardLibrary');
+            const flowCanvas = document.getElementById('flowCanvas');
+            const drawArrowBtn = document.getElementById('drawArrow');
+            const saveCanvasBtn = document.getElementById('saveCanvas');
+            const resetCanvasBtn = document.getElementById('resetCanvas');
+            let isDrawingArrow = false; // 是否处于绘制箭头状态
+            let arrowStart = null; // 箭头起点卡片
+            let canvasCards = []; // 画布中的卡片集合
+            let isSaved = false; // 是否已保存，保存后禁用操作
+
+            // ========== 核心优化：节流函数（减少箭头更新频率，提升流畅度） ==========
+            function throttle(fn, delay = 20) {
+                let timer = null;
+                return function(...args) {
+                    if (!timer) {
+                        timer = setTimeout(() => {
+                            fn.apply(this, args);
+                            timer = null;
+                        }, delay);
+                    }
+                };
+            }
+
+            // 初始化：拖放功能
+            initDragAndDrop();
+            // 初始化：箭头绘制
+            initArrowDraw();
+            // 初始化：保存功能
+            initSave();
+            // 初始化：重置功能
+            initReset();
+
+            // 拖放功能实现
+            function initDragAndDrop() {
+                // 为所有可拖动卡片添加事件
+                const draggables = document.querySelectorAll('.draggable');
+                draggables.forEach(card => {
+                    card.addEventListener('dragstart', dragStart);
+                });
+
+                // 画布拖放事件
+                flowCanvas.addEventListener('dragover', dragOver);
+                flowCanvas.addEventListener('dragleave', dragLeave);
+                flowCanvas.addEventListener('drop', drop);
+
+                // 拖动开始
+                function dragStart(e) {
+                    if (isSaved) return; // 保存后禁用
+                    e.dataTransfer.setData('text/plain', e.target.innerHTML);
+                    e.dataTransfer.setData('cardId', e.target.dataset.id);
+                    setTimeout(() => {
+                        e.target.classList.add('opacity-50');
+                    }, 0);
+                }
+
+                // 拖过画布
+                function dragOver(e) {
+                    if (isSaved) return;
+                    e.preventDefault();
+                    flowCanvas.classList.add('dragover');
+                }
+
+                // 离开画布
+                function dragLeave() {
+                    flowCanvas.classList.remove('dragover');
+                }
+
+                // 拖放完成：在画布生成卡片副本
+                function drop(e) {
+                    if (isSaved) return;
+                    e.preventDefault();
+                    flowCanvas.classList.remove('dragover');
+                    
+                    const cardContent = e.dataTransfer.getData('text/plain');
+                    const cardId = e.dataTransfer.getData('cardId');
+                    // 创建卡片副本
+                    const newCard = document.createElement('div');
+                    newCard.className = `draggable card-shadow p-3 rounded-lg absolute ${cardId.startsWith('q') ? 'bg-secondary' : 'bg-white'}`;
+                    newCard.dataset.id = `${cardId}-${Date.now()}`; // 唯一ID
+                    newCard.innerHTML = cardContent;
+                    // 设置卡片位置（鼠标位置）
+                    newCard.style.left = `${e.clientX - flowCanvas.getBoundingClientRect().left - 50}px`;
+                    newCard.style.top = `${e.clientY - flowCanvas.getBoundingClientRect().top - 20}px`;
+                    // 添加到画布
+                    flowCanvas.appendChild(newCard);
+                    canvasCards.push(newCard);
+                    // 为新卡片添加拖动（画布内自由拖动）
+                    initCanvasCardDrag(newCard);
+                    // 为新卡片添加箭头点击事件
+                    newCard.addEventListener('click', cardClickForArrow);
+                }
+
+                // 画布内卡片自由拖动（集成节流优化）
+                function initCanvasCardDrag(card) {
+                    let isDragging = false;
+                    let startX, startY, originalX, originalY;
+
+                    card.addEventListener('mousedown', startDrag);
+                    document.addEventListener('mousemove', dragHandler); // 绑定节流后的拖动函数
+                    document.addEventListener('mouseup', endDrag);
+
+                    // 节流后的拖动回调函数（核心优化点）
+                    const drag = throttle(function(e) {
+                        if (!isDragging || isSaved) return;
+                        const dx = e.clientX - startX;
+                        const dy = e.clientY - startY;
+                        card.style.left = `${originalX + dx}px`;
+                        card.style.top = `${originalY + dy}px`;
+                        // 更新与该卡片相连的箭头
+                        updateArrowsByCard(card);
+                    }, 20);
+
+                    // 兼容节流的拖动处理函数
+                    function dragHandler(e) {
+                        drag(e);
+                    }
+
+                    function startDrag(e) {
+                        if (isSaved || isDrawingArrow) return;
+                        isDragging = true;
+                        startX = e.clientX;
+                        startY = e.clientY;
+                        originalX = card.offsetLeft;
+                        originalY = card.offsetTop;
+                        card.style.zIndex = 100;
+                        card.classList.add('opacity-80');
+                        e.preventDefault();
+                    }
+
+                    function endDrag() {
+                        if (!isDragging) return;
+                        isDragging = false;
+                        card.style.zIndex = 50;
+                        card.classList.remove('opacity-80');
+                    }
+                }
+            }
+
+            // 箭头绘制功能
+            function initArrowDraw() {
+                drawArrowBtn.addEventListener('click', function() {
+                    if (isSaved) return;
+                    isDrawingArrow = !isDrawingArrow;
+                    this.classList.toggle('bg-opacity-70', isDrawingArrow);
+                    this.innerHTML = isDrawingArrow 
+                        ? '<i class="fas fa-pen"></i> 点击卡片选起点/终点' 
+                        : '<i class="fas fa-long-arrow-alt-right"></i> 绘制箭头';
+                    tipText.textContent = isDrawingArrow ? '提示：先点击箭头起点卡片，再点击终点卡片' : '提示：问题卡片为浅黄色，普通流程卡片为白色';
+                });
+            }
+
+            // 卡片点击（用于选择箭头起点/终点）
+            function cardClickForArrow(e) {
+                if (!isDrawingArrow || isSaved) return;
+                const targetCard = e.target;
+                // 选择起点
+                if (!arrowStart) {
+                    arrowStart = targetCard;
+                    arrowStart.classList.add('ring-2', 'ring-primary');
+                    tipText.textContent = '提示：已选起点，点击另一张卡片作为终点';
+                } else if (arrowStart === targetCard) {
+                    // 取消起点
+                    arrowStart.classList.remove('ring-2', 'ring-primary');
+                    arrowStart = null;
+                    tipText.textContent = '提示：先点击箭头起点卡片，再点击终点卡片';
+                } else {
+                    // 选择终点，绘制箭头
+                    const arrowEnd = targetCard;
+                    drawArrow(arrowStart, arrowEnd);
+                    // 重置箭头绘制状态
+                    arrowStart.classList.remove('ring-2', 'ring-primary');
+                    arrowStart = null;
+                    tipText.textContent = '提示：箭头绘制完成，可继续绘制或取消绘制状态';
+                }
+            }
+
+            // 绘制箭头（SVG实现，自动适配卡片位置）
+            function drawArrow(startCard, endCard) {
+                // 创建箭身
+                const arrowLine = document.createElement('div');
+                arrowLine.className = 'arrow-line';
+                arrowLine.dataset.start = startCard.dataset.id;
+                arrowLine.dataset.end = endCard.dataset.id;
+                // 创建箭头
+                const arrowHead = document.createElement('div');
+                arrowHead.className = 'arrow-head';
+                arrowHead.dataset.start = startCard.dataset.id;
+                arrowHead.dataset.end = endCard.dataset.id;
+                // 添加到画布
+                flowCanvas.appendChild(arrowLine);
+                flowCanvas.appendChild(arrowHead);
+                // 更新箭头位置
+                updateArrowPosition(arrowLine, arrowHead, startCard, endCard);
+            }
+
+            // 更新单个箭头位置
+            function updateArrowPosition(line, head, startCard, endCard) {
+                // 获取卡片中心坐标（相对画布）
+                const startRect = startCard.getBoundingClientRect();
+                const endRect = endCard.getBoundingClientRect();
+                const canvasRect = flowCanvas.getBoundingClientRect();
+                // 画布内相对坐标
+                const startX = startRect.left + startRect.width/2 - canvasRect.left;
+                const startY = startRect.top + startRect.height/2 - canvasRect.top;
+                const endX = endRect.left + endRect.width/2 - canvasRect.left;
+                const endY = endRect.top + endRect.height/2 - canvasRect.top;
+                // 计算箭头长度和角度
+                const dx = endX - startX;
+                const dy = endY - startY;
+                const length = Math.sqrt(dx*dx + dy*dy);
+                const angle = Math.atan2(dy, dx) * 180 / Math.PI;
+                // 设置箭身
+                line.style.width = `${length - 10}px`; // 减去箭头宽度
+                line.style.left = `${startX}px`;
+                line.style.top = `${startY}px`;
+                line.style.transform = `rotate(${angle}deg)`;
+                // 设置箭头
+                head.style.left = `${endX - 10}px`;
+                head.style.top = `${endY - 6}px`;
+                head.style.transform = `rotate(${angle}deg)`;
+            }
+
+            // 根据卡片更新所有相连的箭头
+            function updateArrowsByCard(card) {
+                const cardId = card.dataset.id;
+                const arrows = document.querySelectorAll('.arrow-line, .arrow-head');
+                arrows.forEach(arrow => {
+                    if (arrow.dataset.start === cardId || arrow.dataset.end === cardId) {
+                        const startCard = document.querySelector(`[data-id="${arrow.dataset.start}"]`);
+                        const endCard = document.querySelector(`[data-id="${arrow.dataset.end}"]`);
+                        if (startCard && endCard) {
+                            if (arrow.classList.contains('arrow-line')) {
+                                updateArrowPosition(arrow, document.querySelector(`.arrow-head[data-start="${arrow.dataset.start}"][data-end="${arrow.dataset.end}"]`), startCard, endCard);
+                            }
+                        }
+                    }
+                });
+            }
+
+            // 保存功能：将画布转为图片下载
+            function initSave() {
+                saveCanvasBtn.addEventListener('click', function() {
+                    if (isSaved) return;
+                    // 禁用绘制箭头状态
+                    isDrawingArrow = false;
+                    drawArrowBtn.classList.remove('bg-opacity-70');
+                    drawArrowBtn.innerHTML = '<i class="fas fa-long-arrow-alt-right"></i> 绘制箭头';
+                    // 生成高清图片
+                    html2canvas(flowCanvas, {
+                        scale: 2, // 2倍高清
+                        useCORS: true,
+                        backgroundColor: '#F8F5FF'
+                    }).then(canvas => {
+                        const link = document.createElement('a');
+                        link.href = canvas.toDataURL('image/png');
+                        link.download = '单克隆抗体制备流程图_' + new Date().toLocaleString().replace(/[\/:]/g, '-') + '.png';
+                        link.click();
+                        // 保存后禁用所有操作
+                        isSaved = true;
+                        tipText.textContent = '提示：已保存流程图，画布已锁定（无法改动）';
+                        tipText.classList.add('text-btnSave', 'font-medium');
+                        // 禁用按钮
+                        drawArrowBtn.disabled = true;
+                        drawArrowBtn.classList.add('opacity-50', 'cursor-not-allowed');
+                        saveCanvasBtn.disabled = true;
+                        saveCanvasBtn.classList.add('opacity-50', 'cursor-not-allowed');
+                        // 移除画布所有卡片的交互
+                        document.querySelectorAll('#flowCanvas .draggable').forEach(card => {
+                            card.removeEventListener('click', cardClickForArrow);
+                            card.style.cursor = 'not-allowed';
+                        });
+                    });
+                });
+            }
+
+            // 重置功能：恢复原始状态
+            function initReset() {
+                resetCanvasBtn.addEventListener('click', function() {
+                    if (confirm('确定要重置画布吗？将清除所有卡片和箭头！')) {
+                        // 清空画布
+                        flowCanvas.innerHTML = '';
+                        // 重置全局变量
+                        isDrawingArrow = false;
+                        arrowStart = null;
+                        canvasCards = [];
+                        isSaved = false;
+                        // 恢复按钮状态
+                        drawArrowBtn.disabled = false;
+                        drawArrowBtn.classList.remove('opacity-50', 'cursor-not-allowed', 'bg-opacity-70');
+                        drawArrowBtn.innerHTML = '<i class="fas fa-long-arrow-alt-right"></i> 绘制箭头';
+                        saveCanvasBtn.disabled = false;
+                        saveCanvasBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+                        // 恢复提示
+                        tipText.textContent = '提示：问题卡片为浅黄色，普通流程卡片为白色';
+                        tipText.classList.remove('text-btnSave', 'font-medium');
+                    }
+                });
+            }
+        });
+    </script>
+</body>
+</html>
